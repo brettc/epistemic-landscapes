@@ -188,12 +188,21 @@ class Patches(object):
             ('cache', object),
             ])
 
+    clear_list = 'visits', 'visits_by_type'
+    def clear(self):
+        for c in self.clear_list:
+            self.patch_array_flat[c] = 0
+
 
 class Landscape(object):
     """Maybe we'll manually define one later, so keep a base class"""
     def __init__(self, dims, cache_path=None):
         self.dims = dims
         self.patches = Patches(dims, cache_path)
+
+
+    def clear(self):
+        self.patches.clear()
 
     # Emulate a readonly container
     def __getitem__(self, i):

@@ -17,6 +17,7 @@ class Simulation(object):
         self.time_step = 0
         self.agents = []
         self.landscape = self.parameters.landscape
+        self.landscape.clear()
         self.make_agents()
 
     def make_agents(self):
