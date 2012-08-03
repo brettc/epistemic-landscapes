@@ -1,0 +1,8 @@
+*.pyc
+*.so
+.DS_Store
+build
+*/output
+*/cache
+*/csv
+*/pyx
