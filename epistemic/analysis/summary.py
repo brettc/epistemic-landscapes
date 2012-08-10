@@ -8,31 +8,20 @@ import csv
 @register_analysis
 class summary(ExperimentAnalysis):
 
-    def summarize(self):
-        f = self.get_file('summary.csv')
+    def begin_experiment(self):
+        self.output_file = self.get_file('summary.csv')
+        self.csv_writer = csv.writer(f)
+        self.csv_writer.writerow(['treatment','size'])
 
-        for t in self.experiment.treatments:
-            for s in t.simulations:
-            x = numpy.where(sim.landscape['visits_by_type'][:,i] > 0)[0]
+    def end_replicate(self, sim):
+        pass
+
+            # csv_writer.writerow([
+                # row['t'],
+                # row['explored']
+            # ] + vals)
+
+    def end_experiment(self):
+        pass
 
 
-
-
-        csv_writer = csv.writer(f)
-        csv_writer.writerow(['treatment','size'])
-        for nm, sz in zip(treatment_name, clump_size):
-            csv_writer.writerow([nm, sz])
-
-        # TODO automate this using dtypes...
-        csv_writer = csv.writer(f)
-        names = [n.lower() for n, i in self.agent_types]
-        csv_writer.writerow(['t', 'explored'] + names)
-        for i, row in enumerate(self.data):
-            vals = list(row['explored_by_type'])
-            csv_writer.writerow([
-                row['t'],
-                row['explored']
-            ] + vals)
-
-        # if has_rpy:
-            # self.create_rpy_graph()

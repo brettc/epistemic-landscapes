@@ -36,7 +36,7 @@ class TraceAgent(object):
 
 @register_analysis
 class trace(ReplicateAnalysis):
-    def setup(self, sim):
+    def begin_replicate(self, sim):
         self.tracers = [TraceAgent(a) for a in sim.agents]
 
     def step(self, sim):
@@ -46,7 +46,7 @@ class trace(ReplicateAnalysis):
         for a in sim.agents:
             a._trace.update()
 
-    def summarize(self, sim):
+    def end_replicate(self, sim):
         # Get rid of recursive data structures
         self.tracers = []
 

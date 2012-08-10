@@ -1,6 +1,7 @@
 import logging
 log = logging.getLogger("experiment")
 
+from itertools import chain
 from simulation import Simulation
 from analysis import TreatmentAnalysis, ReplicateAnalysis, ExperimentAnalysis
 # from results import Results
@@ -15,29 +16,33 @@ class Treatment(object):
         self.parameters = parameters
         self.simulations = []
 
-    def run(self, e_callbacks, progress=None):
+    def run(self, e_analyses, e_callbacks, progress=None):
 
-        # Let the analyses set themselves up
+        # Set up and run the treatment_analyses
         t_analyses = []
         callbacks = e_callbacks[:]
         for cls in self.experiment.treatment_analyses:
             c = cls(self.experiment.config, self) 
-            if hasattr(c, 'setup'):
-                c.setup()
             t_analyses.append(c)
             if hasattr(c, 'step'):
                 callbacks.append(c.step)
 
+        for c in chain(e_analyses, t_analyses):
+            if hasattr(c, 'begin_treatment'):
+                log.info("begin treatment analysis '%s'", c.name)
+                c.begin_treatment()
+
         # Run all the replicates
         for i in range(self.replicate_count):
             self.replicate = i
-            self.run_replicate(callbacks[:], progress)
+            self.run_replicate(e_analyses, t_analyses, callbacks[:], progress)
         
-        for a in t_analyses:
-            if hasattr(a, 'summarize'):
-                a.summarize()
+        for c in chain(t_analyses, e_analyses):
+            if hasattr(c, 'end_treatment'):
+                log.info("end treatment analysis '%s'", c.name)
+                c.end_treatment()
 
-    def run_replicate(self, callbacks, progress):
+    def run_replicate(self, e_analyses, t_analyses, callbacks, progress):
         log.info("Beginning Treatment '%s', replicate %d of %d", 
                  self.name,
                  self.replicate+1,
@@ -48,18 +53,22 @@ class Treatment(object):
         r_analyses = []
         for cls in self.experiment.replicate_analyses:
             c = cls(self.experiment.config, self)
-            if hasattr(c, 'setup'):
-                c.setup(sim)
             r_analyses.append(c)
             if hasattr(c, 'step'):
                 callbacks.append(c.step)
 
+        for c in chain(e_analyses, t_analyses, r_analyses):
+            if hasattr(c, 'begin_replicate'):
+                log.info("begin replicate analysis '%s'", c.name)
+                c.begin_replicate(sim)
+
         sim.run(callbacks, progress)
         self.simulations.append(sim)
 
-        for a in r_analyses:
-            if hasattr(a, 'summarize'):
-                a.summarize(sim)
+        for c in chain(e_analyses, t_analyses, r_analyses):
+            if hasattr(c, 'end_replicate'):
+                log.info("end replicate analysis '%s'", c.name)
+                c.end_replicate(sim)
 
 class Experiment(object):
     def __init__(self, config, name):
@@ -100,16 +109,18 @@ class Experiment(object):
         e_analyses = []
         for cls in self.experiment_analyses:
             c = cls(self.experiment.config, self) 
-            if hasattr(c, 'setup'):
-                c.setup()
+            if hasattr(c, 'begin_experiment'):
+                log.info("begin experiment analysis '%s'", c.name)
+                c.begin_experiment()
             e_analyses.append(c)
             if hasattr(c, 'step'):
                 callbacks.append(c.step)
 
         for t in self.treatments:
-            t.run(callbacks, progress)
+            t.run(e_analyses, callbacks, progress)
         
-        for a in e_analyses:
-            if hasattr(a, 'summarize'):
-                a.summarize()
+        for c in e_analyses:
+            if hasattr(c, 'end_experiment'):
+                log.info("end experiment analysis '%s'", c.name)
+                c.end_experiment()
 

@@ -31,7 +31,7 @@ except:
 @register_analysis
 class series(ReplicateAnalysis):
 
-    def setup(self, sim):
+    def begin_replicate(self, sim):
 
         self.agent_types = sim.agent_types()
         dtype = numpy.dtype([
@@ -52,7 +52,7 @@ class series(ReplicateAnalysis):
         self.calc_explored_by_type(record, sim)
 
         
-    def summarize(self, sim):
+    def end_replicate(self, sim):
         f = self.get_file('series.csv')
 
         # TODO automate this using dtypes...

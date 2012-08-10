@@ -16,6 +16,11 @@ class Analysis(object):
         pth = os.path.join(self.config.output_path, self.make_part_name(name))
         return pth
 
+    @property
+    def name(self):
+        return self.__class__.__name__
+
+
 class ExperimentAnalysis(Analysis):
     def __init__(self, settings):
         Analysis.__init__(self, settings)
