@@ -22,6 +22,12 @@ def get_agent_class_info():
     global agent_classes
     return [(a.__name__, a.typeid) for a in agent_classes]
 
+def get_agent_class_names():
+    global agent_classes
+    names = [a.__name__ for a in agent_classes]
+    names.sort()
+    return names
+
 class Agent(object):
     counter = 0
 

@@ -2,6 +2,10 @@ import logging
 log = logging.getLogger("analysis")
 import os
 
+# Make it so we can import the parents stuff
+parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+os.sys.path.insert(0,parentdir) 
+
 class Analysis(object):
     def __init__(self, config):
         self.config = config
@@ -24,6 +28,9 @@ class Analysis(object):
 class ExperimentAnalysis(Analysis):
     def __init__(self, settings):
         Analysis.__init__(self, settings)
+
+    def make_part_name(self, nm):
+        return nm
 
 class TreatmentAnalysis(Analysis):
     def __init__(self, settings, treatment): 

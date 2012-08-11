@@ -8,7 +8,9 @@ class SimulationInterrupt(Exception):
     pass
 
 class Simulation(object):
-    def __init__(self, parameters):
+    def __init__(self, treatment, replicate, parameters):
+        self.treatment = treatment
+        self.replicate = replicate
         self.parameters = parameters
 
         self.random = numpy.random.RandomState()

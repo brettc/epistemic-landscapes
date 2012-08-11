@@ -48,7 +48,7 @@ class Treatment(object):
                  self.replicate+1,
                  self.replicate_count)
 
-        sim = Simulation(self.parameters)
+        sim = Simulation(self, self.replicate, self.parameters)
 
         r_analyses = []
         for cls in self.experiment.replicate_analyses:
@@ -108,7 +108,7 @@ class Experiment(object):
         callbacks = []
         e_analyses = []
         for cls in self.experiment_analyses:
-            c = cls(self.experiment.config, self) 
+            c = cls(self.config) 
             if hasattr(c, 'begin_experiment'):
                 log.info("begin experiment analysis '%s'", c.name)
                 c.begin_experiment()
