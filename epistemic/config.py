@@ -13,7 +13,7 @@ class Configuration(object):
     def init(self, base_path, name):
         """Call this one if you're doing it programmatically"""
         self.base_path = base_path
-        self.output_path = self.make_dir(name)
+        self.output_path = self.make_dir(name + '.output')
         log.info("Setting output folder to '%s'", self.output_path)
         self.init_logger(self.output_path)
 

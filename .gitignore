@@ -2,8 +2,4 @@
 *.so
 .DS_Store
 build
-*/output
-*/cache
-*/csv
-*/pyx
-examples/basic
+*.output
