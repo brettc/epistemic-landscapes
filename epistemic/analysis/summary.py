@@ -5,10 +5,11 @@ from base import ExperimentAnalysis, register_analysis
 import numpy
 import csv
 
-import agent
+import agent, stats
 
 class Row(object):
     def __init__(self, sim):
+        self.sim = sim
         self.treatment = sim.treatment.name
         self.replicate = sim.treatment.replicate
 
@@ -17,13 +18,19 @@ class Row(object):
         return """
             treatment
             replicate
+            coverage
         """.strip().split()
 
     # NOTE: the ordering above should match to what is below
     def basic_data(self):
+
+        pc = stats.percent_visited_above_x(
+            self.sim.landscape.data, 
+            self.sim.parameters.significance_cutoff)
         return [
             self.treatment,
             str(self.replicate),
+            pc,
         ]
 
     @staticmethod
@@ -33,7 +40,6 @@ class Row(object):
     # def agent_data(self):
         # for a in self.sim.agents:
 
-        # return 
 
 @register_analysis
 class summary(ExperimentAnalysis):
@@ -41,14 +47,11 @@ class summary(ExperimentAnalysis):
     def begin_experiment(self):
         self.output_file = self.get_file('summary.csv')
         self.csv_writer = csv.writer(self.output_file)
-        # self.csv_writer.writerow(['treatment','replicate','total_agents'])
+        self.csv_writer.writerow(Row.basic_headers() + Row.agent_headers())
 
     def end_replicate(self, sim):
         row = Row(sim)
-        row.output(self.csv_writer)
+        self.csv_writer.writerow(row.basic_data())
         self.output_file.flush()
 
-        # csv_writer.writerow([
-            # self.treatment,
-            # str(self.replicate),
 

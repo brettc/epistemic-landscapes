@@ -14,6 +14,9 @@ class Parameters(object):
     # Followers move this often, even when the move is not better
     follower_move_p = .01
 
+    # Anything above this is the good stuff
+    significance_cutoff = .5
+
     def __init__(self, **kwargs):
         self.agents = {}
         for k, v in kwargs.items():
