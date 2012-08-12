@@ -3,6 +3,9 @@ log = logging.getLogger("script")
 
 import traceback, sys, cStringIO
 
+class ScriptError(Exception):
+    pass
+
 class Script(object):
     def __init__(self, context):
         self.context = context
@@ -22,6 +25,7 @@ class Script(object):
                 log.error("%s^", (' ' * (err.offset-1)))
             else:
                 log.error("^")
+            raise ScriptError, err
         except Exception, err:
             # Stolen from logging. It's rubbish. But it will do for now.
             ei = sys.exc_info()
@@ -33,6 +37,7 @@ class Script(object):
                 s = s[:-1]
             log.error("Unhandled exception in loading script: '%s'", pth)
             log.error(s)
+            raise ScriptError, err
         else:
             log.info("Finished loading Script '%s'", pth)
             return True

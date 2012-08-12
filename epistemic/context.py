@@ -53,7 +53,8 @@ class Context(object):
     def landscape(self, seed, k, dims):
         # Shortcut to producing landscape
         d = Dimensions(dims)
-        l = NKLandscape(d, K=k, seed=seed)
+        l = NKLandscape(d, K=k, seed=seed, 
+                        cache_path=self.config.cache_path)
         return l
 
     @scripted

@@ -10,16 +10,18 @@ import os
 import cPickle as pickle
 import agent
 
-_default_cache_path = None
-def set_cache_path(pth):
-    global _default_cache_path
-    _default_cache_path = pth
-
 class Dimensions(object):
     """Represents the dimensions of the space"""
     def __init__(self, dim_tuples=[]):
         self.axes = []
         self.axes_by_size = {}
+
+        # What if we're given just a single tuple?
+        if len(dim_tuples) == 2:
+            sz, hm = tuple(dim_tuples)
+            if type(sz) is type(1) and type(hm) is type(1):
+                self.add_dimensions(sz, hm)
+                return
 
         for sz, hm in dim_tuples:
             self.add_dimensions(sz, hm)
@@ -60,9 +62,6 @@ class Patches(object):
     This generates the neighbourhoods
     """
     def __init__(self, dims, cache_path=None):
-        global _default_cache_path
-        if cache_path is None:
-            cache_path = _default_cache_path
 
         if cache_path is not None:
             cache_path = os.path.join(cache_path, dims.ident())
@@ -200,9 +199,12 @@ class Landscape(object):
         self.dims = dims
         self.patches = Patches(dims, cache_path)
 
-
     def clear(self):
         self.patches.clear()
+
+    @property
+    def data(self):
+        return self.patches.patch_array_flat
 
     # Emulate a readonly container
     def __getitem__(self, i):
@@ -227,6 +229,7 @@ class NKLandscape(Landscape):
         Landscape.__init__(self, dims, cache_path) # Base class construction
         self.generate_parameter_fitnesses(seed, K)
         self.assign_patch_fitnesses()
+        self.normalize_fitnesses()
 
     def __repr__(self):
         return "NKLandscape<dims:%s>" % (self.dims.dim_str())
@@ -333,6 +336,14 @@ class NKLandscape(Landscape):
 
             # Assign the average
             p['fitness'] = fit / ndims
+
+    def normalize_fitnesses(self):
+        # TODO Now Normalise the fitnesses
+        fit = self.data['fitness']
+        minfit = min(fit)
+        maxfit = max(fit)
+        normed = (fit - minfit) * 1.0/(maxfit-minfit)
+        self.data['fitness'] = normed
 
     def find_peaks(self):
         log.info("Finding Peaks ...")

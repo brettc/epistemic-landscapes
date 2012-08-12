@@ -2,7 +2,6 @@ import logging
 log = logging.getLogger("config")
 import os, shutil
 from experiment import Experiment
-import landscape
 
 class Configuration(object):
     """This holds the user configuration info"""
@@ -20,7 +19,6 @@ class Configuration(object):
 
         # Creat a cache path
         self.cache_path = self.make_dir('.cache')
-        landscape.set_cache_path(self.cache_path)
 
         # Make an experiment
         self.experiment = Experiment(self, name)

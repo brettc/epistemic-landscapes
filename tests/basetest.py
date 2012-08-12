@@ -1,6 +1,7 @@
 import unittest
 import sys
 import os
+import nose
 
 # Magically append the root folder so we can run stuff directly from the tests
 # folder if we want
@@ -22,6 +23,6 @@ sys.path.append(ROOT_PATH)
 # logging.getLogger("").setLevel(logging.INFO)
 
 # Use a base class for all our tests.
-class TestCase(unittest.TestCase):
-    pass
+# class TestCase(unittest.TestCase):
+    # pass
 
