@@ -345,18 +345,3 @@ class NKLandscape(Landscape):
         normed = (fit - minfit) * 1.0/(maxfit-minfit)
         self.data['fitness'] = normed
 
-    def find_peaks(self):
-        log.info("Finding Peaks ...")
-        peaks = []
-        for p in self.patches.patch_array_flat:
-            bestf = p['fitness']
-            for neighbour_i in p['neighbours']:
-                otherp = self.patches.patch_array_flat[neighbour_i]
-                otherf = otherp['fitness']
-                if otherf > bestf:
-                    break
-            else:
-                # Ok, we got here, so no others are better
-                peaks.append(p)
-        log.info("    Landscapes has %d peaks", len(peaks))
-        return peaks
