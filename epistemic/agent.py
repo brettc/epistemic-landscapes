@@ -4,12 +4,12 @@ log = logging.getLogger("")
 #------------------------------------------------------------------------ 
 # Class factory information
 agent_types = 0
-agent_classes = set()
+agent_classes = []
 
 def add_to_factory(agent):
     global agent_classes
     global agent_types
-    agent_classes.add(agent)
+    agent_classes.append(agent)
 
     # Stick in a type id for referencing them. This will be useful for
     # referencing arrays and the like.
@@ -25,16 +25,14 @@ def get_agent_class_info():
 def get_agent_class_names():
     global agent_classes
     names = [a.__name__ for a in agent_classes]
-    names.sort()
     return names
 
 class Agent(object):
     counter = 0
 
-    def __init__(self, sim):
+    def __init__(self, sim, serial):
         self.sim = sim
-        self.serial = Agent.counter
-        Agent.counter += 1
+        self.serial = serial
 
         self.best = 0.0
         self.patch = None

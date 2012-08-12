@@ -25,8 +25,10 @@ class Simulation(object):
 
     def make_agents(self):
         # log.info("Constructing Agents...")
+        self.next_serial = 0
         for cls, num in self.parameters.agents.items():
-            self.agents.extend([cls(self) for i in range(num)])
+            self.agents.extend([cls(self, self.next_serial) for i in range(num)])
+            self.next_serial += 1
 
     def agent_types(self):
         return agent.get_agent_class_info()
