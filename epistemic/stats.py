@@ -13,9 +13,13 @@ def percent_visited_above_x(patch_data, cutoff, agent_typeid=None):
     if agent_typeid is None:
         visit_count = patch_data['visits']
     else:
-        visit_count = patch_data['visits_by_type'][agent_typeid]
+        visit_count = patch_data['visits_by_type'][:,agent_typeid]
 
     visited = visit_count > 0
+
+    print visited
+    print higher_than_cutoff
+
     visited_above_cutoff = visited & higher_than_cutoff
 
     # How much is above the cutoff in total

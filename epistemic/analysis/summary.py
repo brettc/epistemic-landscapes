@@ -35,10 +35,17 @@ class Row(object):
 
     @staticmethod
     def agent_headers():
-        return ['%s_count' % name for name in agent.get_agent_class_names()]
+        return ['%s_coverage' % name for name in agent.get_agent_class_names()]
 
-    # def agent_data(self):
-        # for a in self.sim.agents:
+    def agent_data(self):
+        cover = []
+        for i in range(agent.agent_types):
+            pc = stats.percent_visited_above_x(
+                self.sim.landscape.data, 
+                self.sim.parameters.significance_cutoff,
+                i)
+            cover.append(pc)
+        return cover
 
 
 @register_analysis
@@ -51,7 +58,7 @@ class summary(ExperimentAnalysis):
 
     def end_replicate(self, sim):
         row = Row(sim)
-        self.csv_writer.writerow(row.basic_data())
+        self.csv_writer.writerow(row.basic_data() + row.agent_data())
         self.output_file.flush()
 
 
