@@ -14,7 +14,8 @@ class Simulation(object):
         self.parameters = parameters
 
         self.random = numpy.random.RandomState()
-        self.random.seed(self.parameters.seed)
+        # TODO THINK about how we use seeds
+        # self.random.seed(self.parameters.seed)
 
         self.time_step = 0
         self.agents = []
