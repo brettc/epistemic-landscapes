@@ -14,7 +14,6 @@ class Treatment(object):
         self.replicate = None
         self.replicate_count = rcount
         self.parameters = parameters
-        self.simulations = []
 
     def run(self, e_analyses, e_callbacks, progress=None):
 
@@ -63,7 +62,6 @@ class Treatment(object):
                 c.begin_replicate(sim)
 
         sim.run(callbacks, progress)
-        self.simulations.append(sim)
 
         for c in chain(e_analyses, t_analyses, r_analyses):
             if hasattr(c, 'end_replicate'):
