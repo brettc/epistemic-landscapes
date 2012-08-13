@@ -1,6 +1,6 @@
 import logging
 log = logging.getLogger("simulation")
-from landscape import NKLandscape, Dimensions
+from landscape import NKLandscape
 import agent 
 import numpy
 
