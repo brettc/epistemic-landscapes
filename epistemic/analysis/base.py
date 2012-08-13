@@ -26,15 +26,15 @@ class Analysis(object):
 
 
 class ExperimentAnalysis(Analysis):
-    def __init__(self, settings):
-        Analysis.__init__(self, settings)
+    def __init__(self, config):
+        Analysis.__init__(self, config)
 
     def make_part_name(self, nm):
         return nm
 
 class TreatmentAnalysis(Analysis):
-    def __init__(self, settings, treatment): 
-        Analysis.__init__(self, settings)
+    def __init__(self, config, treatment): 
+        Analysis.__init__(self, config)
         self.treatment = treatment
 
     def make_part_name(self, nm):
@@ -43,8 +43,8 @@ class TreatmentAnalysis(Analysis):
         return name
 
 class ReplicateAnalysis(Analysis):
-    def __init__(self, settings, treatment):
-        Analysis.__init__(self, settings)
+    def __init__(self, config, treatment):
+        Analysis.__init__(self, config)
         self.treatment = treatment
         self.replicate = treatment.replicate
 
