@@ -3,11 +3,11 @@ log = logging.getLogger("patches")
 
 # import 
 import numpy
-import operator
 import itertools
 import os
 import cPickle as pickle
 import agent
+import operator
 
 class Patches(object):
     """Contains an array of patches with associated data
@@ -57,21 +57,54 @@ class Patches(object):
         for i, values in enumerate(itertools.product(*ranges)):
             self.patch_array_flat['values'][i] = numpy.array(values)
 
-    def generate_neighbours(self, dims):
+    def generate_neighbours_slow(self, dims):
         log.info("Generating neigbourhoods for %d patches ...",
                  len(self.patch_array_flat))
-        # TODO we can get rid of this by using a reshaped array to do the
-        # lookup. It should be faster. But it's cached anyway, so let's do it
-        # later...
+
         # # Make a lookup table, so we can find the neighbours
         lookup = dict([(tuple(p['values']), p) for p in self.patch_array_flat])
         # Now generate the neighbours
 
         for patch_i, p in enumerate(self.patch_array_flat):
             neighbour_i = 0
+        
+            # This is slow, so say something ...
+            if patch_i != 0 and patch_i % 1000==0:
+                log.info("     Working ... (%d Patches complete)", patch_i)
+
+            # Get the axis values that identify this patches
+            values = p['values']
+            # Go along each axis, and generate the alternatives
+            for i, a in enumerate(dims.axes):
+                curval = values[i] 
+                for v in range(a):
+                    # Ignore it if it is the same
+                    if v == curval:
+                        continue
+
+                    # Make the neighbour values (take a copy) DANGER: numpy
+                    # uses references by default
+                    neighbour_values = values.copy()
+                    neighbour_values[i] = v
+
+                    # Look it up
+                    otherp = lookup[tuple(neighbour_values)]
+
+                    other_i = otherp['index']
+                    p['neighbours'][neighbour_i] = other_i
+
+                    # Go to the next neighbour
+                    neighbour_i += 1
+
+    def generate_neighbours_fast(self, dims):
+        log.info("Generating neigbourhoods for %d patches ...",
+                 len(self.patch_array_flat))
+
+        for patch_i, p in enumerate(self.patch_array_flat):
+            neighbour_i = 0
 
             # This is slow, so say something ...
-            if patch_i != 0 and patch_i % 10000==0:
+            if patch_i != 0 and patch_i % 1000==0:
                 log.info("     Working ... (%d Patches complete)", patch_i)
 
             # Get the axis values that identify this patches
@@ -89,18 +122,10 @@ class Patches(object):
                     neighbour_values = values.copy()
                     neighbour_values[i] = v
 
-                    # Look it up
-                    otherp = lookup[tuple(neighbour_values)]
-
                     # TODO ATTEMPTS TO OPTIMIZE
-                    # We get a tuple back -- not an array indexable by field
-                    # name
-                    # test_otherp = self.patch_array_x.item(*neighbour_values)
-                    # print self.patch_array_x.shape
-                    # print neighbour_values
-                    # print test_otherp
-                    # print otherp
-                    # assert otherp['index'] == test_otherp['index']
+
+                    idx = reduce(operator.mul, neighbour_values)
+                    otherp = self.patch_array_flat[idx]
 
                     other_i = otherp['index']
                     p['neighbours'][neighbour_i] = other_i
@@ -144,3 +169,22 @@ class Patches(object):
     def clear(self):
         for c in self.clear_list:
             self.patch_array_flat[c] = 0
+
+    # The fast one is currently slower!
+    generate_neighbours = generate_neighbours_slow
+
+
+def make_patches():
+    from dimensions import Dimensions
+    d = Dimensions()
+    d.add_dimensions(2, 12)
+    Patches(d)
+
+if __name__ == "__main__":
+    from timeit import Timer
+    t = Timer("make_patches()", "from __main__ import make_patches")
+    print t.timeit(number=1)
+    Patches.generate_neighbours = Patches.generate_neighbours_fast
+    t = Timer("make_patches()", "from __main__ import make_patches")
+    print t.timeit(number=1)
+    

@@ -3,11 +3,6 @@ log = logging.getLogger("landscape")
 # import 
 import numpy
 import numpy.random as numpy_random
-import operator
-import itertools
-import os
-import cPickle as pickle
-import agent
 
 from patches import Patches
 
@@ -30,7 +25,6 @@ class Landscape(object):
 
     def __len__(self):
         return len(self.patches.patch_array_flat)
-
 
     def __iter__(self):
         return iter(self.patches.patch_array_flat)
@@ -163,3 +157,4 @@ class NKLandscape(Landscape):
         normed = (fit - minfit) * 1.0/(maxfit-minfit)
         self.data['fitness'] = normed
 
+    
