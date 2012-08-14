@@ -2,7 +2,8 @@ from basetest import *
 import numpy
 
 from nose.plugins.attrib import attr
-from epistemic.landscape import Dimensions, NKLandscape
+from epistemic.landscape import NKLandscape
+from epistemic.dimensions import Dimensions
 
 def test_boolean_dimensions():
     d = Dimensions() 
@@ -50,6 +51,14 @@ def test_dependencies():
     l = NKLandscape(d, K=2)
     _check_deps(l)
 
+def test_redimension():
+    d = Dimensions()
+    d.add_dimensions(4, 4)
+    d.add_dimensions(2, 4)
+    l = NKLandscape(d, K=0)
+    x = l.data
+    # This should work
+    x.shape = d.axes
 
 if __name__ == '__main__':
     nose.runmodule()

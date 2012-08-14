@@ -2,7 +2,8 @@ import logging
 log = logging.getLogger("context")
 
 import experiment, simulation, parameters, analysis, agent
-from landscape import NKLandscape, Dimensions
+from landscape import NKLandscape
+from dimensions import Dimensions
 
 def scripted(method):
     # Don't wrap the function, just record it
