@@ -7,7 +7,6 @@ import itertools
 import os
 import cPickle as pickle
 import agent
-import operator
 
 class Patches(object):
     """Contains an array of patches with associated data
@@ -110,25 +109,20 @@ class Patches(object):
             # Get the axis values that identify this patches
             values = p['values']
             # Go along each axis, and generate the alternatives
+            axes = numpy.array(dims.axes)
             for i, a in enumerate(dims.axes):
                 curval = values[i] 
+                neighbour_values = values.copy()
                 for v in range(a):
                     # Ignore it if it is the same
                     if v == curval:
                         continue
 
-                    # Make the neighbour values (take a copy)
-                    # DANGER: numpy uses references by default
-                    neighbour_values = values.copy()
                     neighbour_values[i] = v
 
-                    # TODO ATTEMPTS TO OPTIMIZE
-
-                    idx = reduce(operator.mul, neighbour_values)
-                    otherp = self.patch_array_flat[idx]
-
-                    other_i = otherp['index']
-                    p['neighbours'][neighbour_i] = other_i
+                    # index is just the product of the axes
+                    idx = sum(neighbour_values * axes)
+                    p['neighbours'][neighbour_i] = idx
 
                     # Go to the next neighbour
                     neighbour_i += 1
@@ -170,7 +164,7 @@ class Patches(object):
         for c in self.clear_list:
             self.patch_array_flat[c] = 0
 
-    # The fast one is currently slower!
+    # The fast one is currently slower and wrong!
     generate_neighbours = generate_neighbours_slow
 
 
