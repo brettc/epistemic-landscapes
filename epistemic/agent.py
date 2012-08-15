@@ -28,7 +28,6 @@ def get_agent_class_names():
     return names
 
 class Agent(object):
-    counter = 0
 
     def __init__(self, sim, serial):
         self.sim = sim
