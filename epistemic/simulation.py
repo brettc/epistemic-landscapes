@@ -1,11 +1,12 @@
 import logging
 log = logging.getLogger("simulation")
-from landscape import NKLandscape
-import agent 
+import agent
 import numpy
+
 
 class SimulationInterrupt(Exception):
     pass
+
 
 class Simulation(object):
     def __init__(self, treatment, replicate, parameters):
@@ -27,12 +28,13 @@ class Simulation(object):
         # log.info("Constructing Agents...")
         self.next_serial = 0
         for cls, num in self.parameters.agents.items():
-            self.agents.extend([cls(self, self.next_serial) for i in range(num)])
+            self.agents.extend(
+                [cls(self, self.next_serial) for i in range(num)])
             self.next_serial += 1
 
     def agent_types(self):
         return agent.get_agent_class_info()
-        
+
     def run(self, callbacks=None, progress=None):
         if progress:
             progress.begin(self)
@@ -48,16 +50,15 @@ class Simulation(object):
                 progress.update(self)
                 while progress.paused:
                     progress.interact(self)
-                if progress.running == False:
+                if progress.running is False:
                     log.info("User interrupted simulation, ending it ...")
                     raise SimulationInterrupt
             self.time_step += 1
 
         self.end()
-        
+
         if progress:
             progress.end(self)
-
 
     def begin(self):
         pass
