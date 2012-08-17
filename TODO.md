@@ -4,6 +4,10 @@
 - have a DUMP parameters function that allows it to put out to text.
 - import from a file
 
+# Michael's stuff
+
+See here <https://docs.google.com/document/d/1IlSjdpKPKCMM7s-ge5tCT6ShKsCYCobnWeeK_R5GAqg/edit?pli=1>
+
 # FIXME
 
 	epistemic/landscape.py|265 col 15| # FIXME This is still not right, cos we can get repeats!

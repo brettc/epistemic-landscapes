@@ -1,7 +1,7 @@
 import logging
 log = logging.getLogger("")
 
-#------------------------------------------------------------------------ 
+#------------------------------------------------------------------------
 # Class factory information
 agent_types = 0
 agent_classes = []
@@ -104,10 +104,10 @@ class Agent(object):
         if len(visited) == 1:
             return visited[0]
         visited.sort(key=lambda p: p['fitness'])
-        # TODO Pick randomly among BEST if there ties 
+        # TODO Pick randomly among BEST if there ties
         return visited[-1]
 
-#------------------------------------------------------------------------ 
+#------------------------------------------------------------------------
 # Actual classes defined here
 
 @add_to_factory
@@ -128,7 +128,7 @@ class Maverick(Agent):
             # Everything has been visited, so now find the best.
             p = self.nominate_best_visited()
             # if p['fitness'] < self.patch['fitness']:
-                # return 
+                # return
         self.move(p)
 
 @add_to_factory
@@ -146,7 +146,7 @@ class Follower(Agent):
             # Very seldom, we'll move somewhere even though it's worse
             move_anyway = self.sim.random.uniform(0.0, 1.0)
             if move_anyway > self.sim.parameters.follower_move_p:
-                # Stay put 
+                # Stay put
                 return
             # Hm, maybe should select on basic of difference from current fit?
             p = self.nominate_random()
