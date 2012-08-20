@@ -2,24 +2,27 @@
 from libcpp.string cimport string
 from libcpp.vector cimport vector
 
-# cdef vector[int] intvect
-# cdef intvec v = xrange(1, 10, 2)
-# print v
 cdef extern from "agent_src.h":
     cdef cppclass Attributes:
         vector[int] v
+        string s
 
 # cdef Attributes a
 # a.v.push_back(5)
 # print a.v
 cdef class Blarg:
     cdef Attributes a
-    def __cinit__(self):
-        self.a.v = xrange(1, 10, 2)
+    def __cinit__(self, list x):
+        self.a.v = x
+        self.a.s = 'blarg'
 
     property v:
         def __get__(self):
             return self.a.v
 
+    property s:
+        def __get__(self):
+            return self.a.s
+            # return self.a.s
 
 
