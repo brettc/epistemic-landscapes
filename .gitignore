@@ -3,3 +3,5 @@
 .DS_Store
 build
 *.output
+*.ropeproject
+epistemic/*.cpp
