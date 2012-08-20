@@ -1,7 +1,8 @@
+tags
 *.pyc
 *.so
-.DS_Store
-build
 *.output
-.ropeproject/
-tags
+.DS_Store
+*.ropeproject
+build/*
+epistemic/*.cpp
