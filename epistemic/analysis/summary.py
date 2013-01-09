@@ -1,11 +1,12 @@
 import logging
 log = logging.getLogger("analysis.summary")
 
-from base import ExperimentAnalysis, register_analysis
-import numpy
 import csv
 
-import agent, stats
+from ..pytreatments import plugin
+from .. import agent
+from .. import stats
+
 
 class Row(object):
     def __init__(self, sim):
@@ -25,7 +26,7 @@ class Row(object):
     def basic_data(self):
 
         pc = stats.percent_visited_above_x(
-            self.sim.landscape.data, 
+            self.sim.landscape.data,
             self.sim.parameters.significance_cutoff)
         return [
             self.treatment,
@@ -41,13 +42,12 @@ class Row(object):
         cover = []
         for i in range(agent.agent_types):
             pc = stats.percent_visited_above_x(
-                self.sim.landscape.data, 
+                self.sim.landscape.data,
                 self.sim.parameters.significance_cutoff,
                 i)
             cover.append(pc)
         return cover
 
-    
     @staticmethod
     def count_headers():
         return ['%s_count' % name for name in agent.get_agent_class_names()]
@@ -59,9 +59,8 @@ class Row(object):
         return cnt
 
 
-
-@register_analysis
-class summary(ExperimentAnalysis):
+@plugin.register_plugin
+class summary(plugin.ExperimentPlugin):
 
     def begin_experiment(self):
         self.output_file = self.get_file('summary.csv')
@@ -72,5 +71,3 @@ class summary(ExperimentAnalysis):
         row = Row(sim)
         self.csv_writer.writerow(row.basic_data() + row.count_data() + row.coverage_data())
         self.output_file.flush()
-
-

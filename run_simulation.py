@@ -4,9 +4,10 @@ log = logging.getLogger("main")
 import sys
 from optparse import OptionParser
 import epistemic.pytreatments
-from epistemic.pytreatments import config, script
+from epistemic.pytreatments import config, script, plugin
 from epistemic import context, simulation
 
+import epistemic.analysis
 
 def configure_options():
     usage = """usage: python %prog [options] <config-file>"""

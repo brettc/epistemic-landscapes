@@ -15,10 +15,6 @@ class Context(pytreatments.Context):
         ns['parameters'] = parameters.Parameters
         ns['landscape'] = self.landscape
 
-        # We need to add the agent classes too...
-        for cls in analysis.analyses:
-            ns[cls.__name__] = cls
-
         for cls in agent.agent_classes:
             ns[cls.__name__] = cls
 

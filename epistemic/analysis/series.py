@@ -1,7 +1,8 @@
 import logging
 log = logging.getLogger("analysis.series")
 
-from base import ReplicateAnalysis, register_analysis
+from ..pytreatments import plugin
+
 import numpy
 import csv
 
@@ -28,8 +29,8 @@ except:
     has_pyx = False
 
 
-@register_analysis
-class series(ReplicateAnalysis):
+@plugin.register_plugin
+class series(plugin.ReplicatePlugin):
 
     def begin_replicate(self, sim):
 
@@ -37,7 +38,7 @@ class series(ReplicateAnalysis):
         dtype = numpy.dtype([
             # Timestep
             ('t', numpy.int32),
-            ('explored', numpy.float64), 
+            ('explored', numpy.float64),
             ('explored_by_type', numpy.float64, len(self.agent_types))
             ])
 
@@ -51,7 +52,7 @@ class series(ReplicateAnalysis):
         self.calc_explored(record, sim)
         self.calc_explored_by_type(record, sim)
 
-        
+
     def end_replicate(self, sim):
         f = self.get_file('series.csv')
 
