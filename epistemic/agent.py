@@ -6,7 +6,8 @@ log = logging.getLogger("")
 agent_types = 0
 agent_classes = []
 
-def add_to_factory(agent):
+
+def register_agent(agent):
     global agent_classes
     global agent_types
     agent_classes.append(agent)
@@ -18,14 +19,17 @@ def add_to_factory(agent):
 
     return agent
 
+
 def get_agent_class_info():
     global agent_classes
     return [(a.__name__, a.typeid) for a in agent_classes]
+
 
 def get_agent_class_names():
     global agent_classes
     names = [a.__name__ for a in agent_classes]
     return names
+
 
 class Agent(object):
 
@@ -109,14 +113,16 @@ class Agent(object):
 #------------------------------------------------------------------------
 # Actual classes defined here
 
-@add_to_factory
+
+@register_agent
 class Drunk(Agent):
     """The Drunk does a random walk"""
     def step(self):
         p = self.nominate_random()
         self.move(p)
 
-@add_to_factory
+
+@register_agent
 class Maverick(Agent):
     """A Maverick prefers unvisited cells, otherwise it chooses the best. If
     none are better it stays put.
@@ -130,7 +136,8 @@ class Maverick(Agent):
                 # return
         self.move(p)
 
-@add_to_factory
+
+@register_agent
 class Follower(Agent):
     """The Follower chooses the best in the neighbourhood. If they're all
     worse then they simply stop. They do have a small experimentation rate.
@@ -151,5 +158,3 @@ class Follower(Agent):
             p = self.nominate_random()
 
         self.move(p)
-
-
