@@ -2,11 +2,12 @@ import logging
 log = logging.getLogger("parameters")
 
 import copy
+import pytreatments
 
 class ParametersError(Exception):
     pass
 
-class Parameters(object):
+class Parameters(pytreatments.Parameters):
     # Put the default parameters here
     seed = 0
     landscape = None
