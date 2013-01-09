@@ -1,0 +1,3 @@
+[submodule "epistemic/pytreatments"]
+	path = epistemic/pytreatments
+	url = git@github.com:brettc/pytreatments

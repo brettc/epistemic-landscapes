@@ -1,7 +1,7 @@
 import logging
 log = logging.getLogger("landscape")
 
-# import 
+# import
 import numpy
 from numpy import random as numpy_random
 import operator
@@ -58,7 +58,7 @@ class Dimensions(object):
 
 class Patches(object):
     """Contains an array of patches with associated data
-    
+
     This generates the neighbourhoods
     """
     def __init__(self, dims, cache_path=None):
@@ -125,7 +125,7 @@ class Patches(object):
             values = p['values']
             # Go along each axis, and generate the alternatives
             for i, a in enumerate(dims.axes):
-                curval = values[i] 
+                curval = values[i]
                 for v in range(a):
                     # Ignore it if it is the same
                     if v == curval:
@@ -158,7 +158,7 @@ class Patches(object):
 
     def make_dtype(self, dims):
         """Return a data type for constructing a numpy array
-        
+
         This allows us to keep all the data in one big array.
         It also means that any use of cython can get access to raw "C" values
         for fast manipulation.
@@ -172,10 +172,10 @@ class Patches(object):
 
             # Data need for each patch
             # add more stuff here...
-            ('visits', numpy.int32), 
-            ('visits_by_type', numpy.int32, agent.agent_types), 
+            ('visits', numpy.int32),
+            ('visits_by_type', numpy.int32, agent.agent_types),
 
-            ('fitness', numpy.float64), 
+            ('fitness', numpy.float64),
 
             # Lookups, so we can easily find neighbours.
             # We generate this stuff above
@@ -220,10 +220,10 @@ class Landscape(object):
 
 class NKLandscape(Landscape):
     """Use NK stuff to generate the landscape
-    
+
     Actually, this is an extended NK landscape, as the each dimensions can
     have more the 2 (binary) discrete values
-    
+
     """
     def __init__(self, dims, seed=None, K=0, cache_path=None):
         Landscape.__init__(self, dims, cache_path) # Base class construction
@@ -241,7 +241,7 @@ class NKLandscape(Landscape):
         Each parameter can have S states, so (0, 1) for binary
         Each parameter state generates a fitness
         The total fitness is the average across all parameters
-        
+
         K is how many other parameters (dimensions) each parameter relies on.
         Assume than we have 3 binary dimensions, A, B, C
         In the K == 0 case:
@@ -299,7 +299,7 @@ class NKLandscape(Landscape):
             # Get the sizes of the dependent axes for this parameter
             dnum = [self.dims.axes[d] for d in dependencies[i]]
             # Generate it using the same shape we'll need
-            # TODO Should we use uniform random? 
+            # TODO Should we use uniform random?
             parameter_fitnesses.append(numpy_random.uniform(0, 1, dnum))
 
         self.K = K
@@ -307,8 +307,8 @@ class NKLandscape(Landscape):
         self.parameter_fitnesses = parameter_fitnesses
 
     def assign_patch_fitnesses(self):
-        """Now assign each patch a fitness. 
-        
+        """Now assign each patch a fitness.
+
         This uses the dependencies generated above.
         """
         log.info("Assigning NK fitnesses to patches...")
@@ -327,10 +327,10 @@ class NKLandscape(Landscape):
             for deps, fits in deps_and_fits:
                 # The value depends on the current parameter and what it
                 # depends on (see above). This extracts the relevant values
-                # given our dependencies. 
+                # given our dependencies.
                 relevant_values = vals[deps]
 
-                # Now use "item" to index into the relevant fitness value 
+                # Now use "item" to index into the relevant fitness value
                 f = fits.item(*relevant_values)
                 fit += f
 
