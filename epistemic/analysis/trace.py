@@ -1,7 +1,8 @@
 import logging
 log = logging.getLogger("analysis.trace")
 
-from base import ReplicateAnalysis, register_analysis
+from ..pytreatments import plugin
+
 
 class TraceAgent(object):
     def __init__(self, a, output):
@@ -26,7 +27,7 @@ class TraceAgent(object):
         # separate file rather than log it.
         text = '%s %d moves from %s to %s: patches seen=%s, stuck=%s' % (
             self.agent.typename,
-            self.agent.serial, 
+            self.agent.serial,
             self.old,
             self.new,
             len(self.agent.visited),
@@ -35,17 +36,17 @@ class TraceAgent(object):
         output.write(text)
         output.write('\n')
 
-        # log.info('%s %d moves from %s to %s: patches seen=%s, stuck=%s', 
+        # log.info('%s %d moves from %s to %s: patches seen=%s, stuck=%s',
                  # self.agent.typename,
-                 # self.agent.serial, 
+                 # self.agent.serial,
                  # self.old,
                  # self.new,
                  # len(self.agent.visited),
                  # self.stuck
                 # )
 
-@register_analysis
-class trace(ReplicateAnalysis):
+@plugin.register_plugin
+class trace(plugin.ReplicatePlugin):
     def begin_replicate(self, sim):
         self.output = self.get_file('trace.txt')
         self.tracers = [TraceAgent(a, self.output) for a in sim.agents]

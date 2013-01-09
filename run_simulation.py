@@ -3,7 +3,11 @@ log = logging.getLogger("main")
 
 import sys
 from optparse import OptionParser
-from epistemic import config, script, context, experiment, simulation
+import epistemic.pytreatments
+from epistemic.pytreatments import config, script, plugin
+from epistemic import context, simulation
+
+import epistemic.analysis
 
 def configure_options():
     usage = """usage: python %prog [options] <config-file>"""
@@ -23,6 +27,7 @@ def configure_options():
 
     return parser
 
+
 def configure_logging():
     # TODO Add additional logger in the output folder
     handler = logging.StreamHandler(sys.stdout)
@@ -33,6 +38,7 @@ def configure_logging():
     root = logging.getLogger("")
     root.addHandler(handler)
     root.setLevel(logging.INFO)
+
 
 def main():
     configure_logging()
@@ -49,34 +55,29 @@ def main():
     log.info("Starting up...")
 
     # Load, using the first argument as the folder
-    cfg = config.Configuration(options.clean)
+    cfg = config.Configuration(simulation.Simulation, options.clean)
     ctx = context.Context(cfg)
     sct = script.Script(ctx)
-        
-    # For now, we just turn on debugging 
+
+    # For now, we just turn on debugging
     if options.verbose:
         logging.getLogger("").setLevel(logging.DEBUG)
 
     if sct.load(script_path):
         # TODO cfg.validate()
-        # Override settings
-        # if options.graphics > 0:
-            # p = Progress(options.graphics)
-        # else:
         p = None
 
         try:
             cfg.experiment.run(p)
             return 0
-            
+
         except KeyboardInterrupt:
             log.error("User interrupted the Program")
-        except simulation.SimulationInterrupt:
+        except epistemic.pytreatments.Interrupt:
             pass
-            
+
     return 1
 
 if __name__ == "__main__":
     # Well behaved unix programs exits with 0 on success...
     sys.exit(main())
-
