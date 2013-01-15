@@ -1,10 +1,14 @@
 import logging
 log = logging.getLogger("main")
-from optparse import OptionParser
 import sys
-from epistemic import config, script, context, experiment, simulation
+from optparse import OptionParser
+import epistemic.pytreatments
+from epistemic.pytreatments import config, script, plugin
+from epistemic import context, simulation
 
-cfg = config.Configuration(True)
+import epistemic.analysis
+
+cfg = config.Configuration(simulation.Simulation, True)
 
 def configure_options():
     usage = """usage: python %prog [options] <config-file>"""
@@ -24,8 +28,20 @@ def configure_options():
 
     return parser
 
+def configure_logging():
+    # TODO Add additional logger in the output folder
+    handler = logging.StreamHandler(sys.stdout)
+    # format = "%(name)-15s | %(levelname)-8s | %(asctime)s | %(message)s"
+    format = "%(name)-15s | %(levelname)-8s | %(message)s"
+    formatter = logging.Formatter(format)
+    handler.setFormatter(formatter)
+    root = logging.getLogger("")
+    root.addHandler(handler)
+    root.setLevel(logging.INFO)
+
 def load():
     global cfg
+    configure_logging()
     parser = configure_options()
     options, args = parser.parse_args()
     ctx = context.Context(cfg)
