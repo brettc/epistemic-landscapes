@@ -33,9 +33,10 @@ def get_agent_class_names():
 
 class Agent(object):
 
-    def __init__(self, sim, serial):
+    def __init__(self, sim):
         self.sim = sim
-        self.serial = serial
+        self.serial = sim.next_serial
+        sim.next_serial += 1
 
         self.best = 0.0
         self.patch = None
@@ -89,6 +90,8 @@ class Agent(object):
             i = self.sim.random.randint(0, l)
             return choices[i]
 
+        return None
+
     def nominate_random(self):
         return self.randomly_choose(self.neighbours)
 
@@ -106,9 +109,20 @@ class Agent(object):
             return None
         if len(visited) == 1:
             return visited[0]
-        visited.sort(key=lambda p: p['fitness'])
-        # TODO Pick randomly among BEST if there ties
-        return visited[-1]
+
+        # Find the best (equal)
+        # Start with impossible negative score
+        best_score = -1.0
+        for v in visited:
+            f = v['fitness']
+            if f > best_score:
+                best = [v]
+                best_score = f
+            elif f == best_score:
+                best.append(v)
+
+        return self.randomly_choose(best)
+
 
 #------------------------------------------------------------------------
 # Actual classes defined here

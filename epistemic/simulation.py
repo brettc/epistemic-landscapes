@@ -23,8 +23,7 @@ class Simulation(pytreatments.Simulation):
         self.next_serial = 0
         self.agents = []
         for cls, num in self.parameters.agents.items():
-            self.agents.extend([cls(self, self.next_serial) for i in range(num)])
-            self.next_serial += 1
+            self.agents.extend([cls(self) for i in range(num)])
 
     def step(self):
         log.info("Stepping ...")
