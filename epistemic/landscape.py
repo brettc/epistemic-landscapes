@@ -10,6 +10,7 @@ import os
 import cPickle as pickle
 import agent
 
+
 class Dimensions(object):
     """Represents the dimensions of the space"""
     def __init__(self, dim_tuples=[]):
@@ -19,7 +20,7 @@ class Dimensions(object):
         # What if we're given just a single tuple?
         if len(dim_tuples) == 2:
             sz, hm = tuple(dim_tuples)
-            if type(sz) is type(1) and type(hm) is type(1):
+            if isinstance(sz, type(1)) and isinstance(hm, type(1)):
                 self.add_dimensions(sz, hm)
                 return
 
@@ -45,14 +46,13 @@ class Dimensions(object):
     def neighbourhood_size(self):
         # Calculate possible one-step neighbours
         # Each dimension can vary by 1 less than it's size
-        return reduce(operator.add, [x-1 for x in self.axes])
+        return reduce(operator.add, [x - 1 for x in self.axes])
 
     def size(self):
         return reduce(operator.mul, self.axes)
 
     def dim_str(self):
-        ax = self.axes_by_size.items()
-        ax.sort()
+        ax = sorted(self.axes_by_size.items())
         return '-'.join(['%sx%s' % (k, v) for k, v in ax])
 
 
@@ -76,7 +76,8 @@ class Patches(object):
         log.info("Created an array of %d patches", len(self.patch_array_flat))
 
         # Assign the patches a unique id (their index in the array)
-        self.patch_array_flat['index'] = numpy.arange(self.patch_array_flat.size)
+        self.patch_array_flat['index'] = numpy.arange(
+            self.patch_array_flat.size)
         self.generate_indexes(dims)
         self.generate_neighbours(dims)
 
@@ -118,7 +119,7 @@ class Patches(object):
             neighbour_i = 0
 
             # This is slow, so say something ...
-            if patch_i != 0 and patch_i % 10000==0:
+            if patch_i != 0 and patch_i % 10000 == 0:
                 log.info("     Working ... (%d Patches complete)", patch_i)
 
             # Get the axis values that identify this patches
@@ -155,7 +156,6 @@ class Patches(object):
                     # Go to the next neighbour
                     neighbour_i += 1
 
-
     def make_dtype(self, dims):
         """Return a data type for constructing a numpy array
 
@@ -185,12 +185,19 @@ class Patches(object):
             # This allows us to cache data in a python object during the
             # search
             ('cache', object),
-            ])
+        ])
 
     clear_list = 'visits', 'visits_by_type'
+
     def clear(self):
         for c in self.clear_list:
             self.patch_array_flat[c] = 0
+
+
+# See here:
+# http://numpy-discussion.10968.n7.nabble.com/Generating-random-samples-without-repeats-td25666.html
+def sample_without_repeats(M, N):
+    return numpy.random.rand(M).argsort()[:N]
 
 
 class Landscape(object):
@@ -213,7 +220,6 @@ class Landscape(object):
     def __len__(self):
         return len(self.patches.patch_array_flat)
 
-
     def __iter__(self):
         return iter(self.patches.patch_array_flat)
 
@@ -226,7 +232,7 @@ class NKLandscape(Landscape):
 
     """
     def __init__(self, dims, seed=None, K=0, cache_path=None):
-        Landscape.__init__(self, dims, cache_path) # Base class construction
+        Landscape.__init__(self, dims, cache_path)  # Base class construction
         self.generate_parameter_fitnesses(seed, K)
         self.assign_patch_fitnesses()
         self.normalize_fitnesses()
@@ -270,25 +276,28 @@ class NKLandscape(Landscape):
 
         # The fitness of each parameter depends on itself and K other
         # parameters...
-        dependencies = numpy.zeros((N, K+1), int)
+        dependencies = numpy.zeros((N, K + 1), int)
         # The first dependency is just yourself
-        dependencies[:,0] = numpy.arange(0, N)
+        dependencies[:, 0] = numpy.arange(0, N)
 
         if K > 0:
             # Now add some random others. They can't be the same as the current
             # one though, so we generate numbers in range 0, N-1, then
             # adjust...
-            # FIXME This is still not right, cos we can get repeats!
-            # Need to do a "sample"
-            links = numpy_random.randint(0, N-1, (N, K))
-
-            # Now we increment those that point to the same parameter or more
-            # This adjust for the above N-1 random number generation
+            # This almost does the right thing, but get repeats!
+            # links = numpy_random.randint(0, N - 1, (N, K))
+            # So ...
+            links = numpy.zeros((N, K))
             for i in range(N):
-                links[i] = numpy.where(links[i] >= i, links[i]+1, links[i])
+                l = sample_without_repeats(N - 1, K)
+
+                # Now we increment those that point to the same parameter
+                # or more. This adjusts for the above N - 1 random number
+                # generation
+                links[i] = numpy.where(l >= i, l + 1, l)
 
             # Now add these to the dependencies
-            dependencies[:,-K:] = links
+            dependencies[:, -K:] = links
 
         # Note that we can't use a numpy array here, as some dimensions
         # may differ in size...
@@ -342,6 +351,5 @@ class NKLandscape(Landscape):
         fit = self.data['fitness']
         minfit = min(fit)
         maxfit = max(fit)
-        normed = (fit - minfit) * 1.0/(maxfit-minfit)
+        normed = (fit - minfit) * 1.0 / (maxfit - minfit)
         self.data['fitness'] = normed
-
