@@ -1,3 +1,4 @@
+from basetest import pytest
 import numpy
 
 from epistemic.landscape import NKLandscape
@@ -63,6 +64,20 @@ def test_redimension():
     # This should work
     x.shape = d.axes
 
+
+def test_squishing():
+    d = Dimensions()
+    d.add_dimensions(2, 10)
+    l = NKLandscape(d, K=3)
+
+    # TODO Finish tests
+    totsig = sum(l.data['fitness'])
+    l.squish_bottom(.5, .4, 3)
+    newsig = sum(l.data['fitness'])
+    assert newsig < totsig
+    # Path should be shallow
+
+
 if __name__ == '__main__':
-    import pytest
+    # test_squishing()
     pytest.main(__file__)

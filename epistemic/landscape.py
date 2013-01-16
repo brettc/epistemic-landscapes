@@ -176,6 +176,7 @@ class Patches(object):
             ('visits_by_type', numpy.int32, agent.agent_types),
 
             ('fitness', numpy.float64),
+            ('significance', numpy.float64),
 
             # Lookups, so we can easily find neighbours.
             # We generate this stuff above
@@ -249,28 +250,36 @@ class NKLandscape(Landscape):
         The total fitness is the average across all parameters
 
         K is how many other parameters (dimensions) each parameter relies on.
-        Assume than we have 3 binary dimensions, A, B, C
+        Assume than we have 3 binary dimensions, A, B, C. Total fitness depends
+        on the value of these parameters which can take on A={0,1}, B= same same
+
         In the K == 0 case:
-            For each parameter, we assign a random value to each state. For
-            example:
-                if A == 0 then .665
-                if A == 1 then .123
-            To get the value for the total state we average across all
-            parameters
+            For each parameter, we assign a random value to each state. As K =
+            0, we assign a value to each possible state that A can take, which
+            is 0 or 1. For example:
+                if A == 0 then f(A) = .665
+                if A == 1 then f(A) = .123
+            To get the value for the total state we work out the same thing for
+            B and C, then average across all parameters
 
         In the K == 1 case:
             Each dimension is linked to one other dimension. The value for
             each state now depends on the state of another parameter. Assume A
             is linked to (relies on) B. The fitness for B can now take on 4
-            different values, depending on the state of A and the state of B:
-                if A == 0 and B == 0 then .667
-                if A == 0 and B == 1 then .123
-                if A == 1 and B == 0 then .492
-                if A == 1 and B == 1 then .092
-            Again, we average over all fitnesses
+            different values, depending on the state of A and the state of B.
+            So assign 4 different random values to the A parameter. For
+            example:
+                if A == 0 and B == 0 then f(A) = .667
+                if A == 0 and B == 1 then f(A) = .123
+                if A == 1 and B == 0 then f(A) = .492
+                if A == 1 and B == 1 then f(A) = .092
+            That just gives us the fitness of parameter A. We'd do the same for
+            B and C now. Then average.
 
+        So the fitness of each parameter depends on itself, and K other
+        parameters.  The higher K is, the more random values we need for each
+        parameter.
         """
-        # Randomly link each of the N positions to K others
         numpy_random.seed(seed)
         N = self.dims.dimensionality()
 
@@ -308,7 +317,7 @@ class NKLandscape(Landscape):
             # Get the sizes of the dependent axes for this parameter
             dnum = [self.dims.axes[d] for d in dependencies[i]]
             # Generate it using the same shape we'll need
-            # TODO Should we use uniform random?
+            # TODO Think about whether we we use uniform random?
             parameter_fitnesses.append(numpy_random.uniform(0, 1, dnum))
 
         self.K = K
@@ -353,3 +362,34 @@ class NKLandscape(Landscape):
         maxfit = max(fit)
         normed = (fit - minfit) * 1.0 / (maxfit - minfit)
         self.data['fitness'] = normed
+        self.calculate_patch_significance()
+
+    def calculate_patch_significance(self):
+        fit = self.data['fitness']
+        total = sum(fit)
+        self.data['significance'] = fit / total
+
+    def squish_bottom(self, squish_from, squish_to, scaling=1.0):
+        """
+        Squishes the points in a box of height 'squish_from' into a box of
+        height 'squish_to'. Linear scaling = 1.0. Use higher to curve the
+        scaling so you don't get a hard edge.
+        """
+        if squish_from <= 0.0 or squish_from > 1.0:
+            log.error("Squish squish_from should be greater than zero and less "
+                      "that 1.0, you've set it to %s", squish_from)
+            raise RuntimeError
+
+        # TODO: could make this stretch too...?
+        if squish_from <= squish_to:
+            log.error("squish_from needs to be great than squish_to")
+        fit = self.data['fitness']
+        lower_indexes = numpy.where(fit < squish_from)
+        lower = fit[lower_indexes]
+        if scaling != 0.0:
+            lower = pow(lower, scaling)
+        lower = squish_to + (lower * ((squish_from - squish_to) / squish_from))
+        fit[lower_indexes] = lower
+
+        # Need to renormalize
+        self.normalize_fitnesses()
