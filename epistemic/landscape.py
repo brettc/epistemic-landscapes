@@ -372,7 +372,10 @@ class NKLandscape(Landscape):
     def squish_bottom(self, squish_from, squish_to, scaling=1.0):
         """
         Squishes the points in a box of height 'squish_from' into a box of
-        height 'squish_to'. Linear scaling = 1.0. Use higher to curve the
+        height 'squish_to'. So anything that was 0.0 will become squish_to.
+        Anything above squish_from stays the same.
+
+        Linear scaling = 1.0. Use higher to curve the
         scaling so you don't get a hard edge.
         """
         if squish_from <= 0.0 or squish_from > 1.0:
@@ -383,13 +386,21 @@ class NKLandscape(Landscape):
         # TODO: could make this stretch too...?
         if squish_from <= squish_to:
             log.error("squish_from needs to be great than squish_to")
+            raise RuntimeError
+
         fit = self.data['fitness']
+        # We only affect everything below squish_from
         lower_indexes = numpy.where(fit < squish_from)
         lower = fit[lower_indexes]
+
+        # Non linear scaling -- just a power, as it is easy.
+        # The higher the scaling, the more curvy the top end is.
         if scaling != 0.0:
             lower = pow(lower, scaling)
+
+        # remap everything, and apply
         lower = squish_to + (lower * ((squish_from - squish_to) / squish_from))
         fit[lower_indexes] = lower
 
-        # Need to renormalize
+        # Need to renormalize, cos now the lowest value is squish_to
         self.normalize_fitnesses()
