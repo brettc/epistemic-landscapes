@@ -28,18 +28,3 @@ def percent_visited_above_x(patch_data, cutoff, agent_typeid=None):
     pc_visited = fit_visited/fit_total
     return pc_visited
 
-def find_peaks(ls):
-    log.info("Finding Peaks for landscape %s ...", ls)
-    peaks = []
-    for p in ls.patches.patch_array_flat:
-        bestf = p['fitness']
-        for neighbour_i in p['neighbours']:
-            otherp = ls.patches.patch_array_flat[neighbour_i]
-            otherf = otherp['fitness']
-            if otherf > bestf:
-                break
-        else:
-            # Ok, we got here, so no others are better
-            peaks.append(p)
-    log.info("Landscapes %s has %d peaks", ls, len(peaks))
-    return peaks

@@ -11,51 +11,6 @@ import cPickle as pickle
 import agent
 
 
-class Dimensions(object):
-    """Represents the dimensions of the space"""
-    def __init__(self, dim_tuples=[]):
-        self.axes = []
-        self.axes_by_size = {}
-
-        # What if we're given just a single tuple?
-        if len(dim_tuples) == 2:
-            sz, hm = tuple(dim_tuples)
-            if isinstance(sz, type(1)) and isinstance(hm, type(1)):
-                self.add_dimensions(sz, hm)
-                return
-
-        for sz, hm in dim_tuples:
-            self.add_dimensions(sz, hm)
-
-    def add_dimensions(self, size, how_many):
-        self.axes.extend([size] * how_many)
-        try:
-            n = self.axes_by_size[size]
-        except KeyError:
-            n = 0
-        n += how_many
-        self.axes_by_size[size] = n
-
-    def dimensionality(self):
-        return len(self.axes)
-
-    def ident(self):
-        # Unique ident for axes -- use for caching landscapes
-        return self.dim_str() + '.patches'
-
-    def neighbourhood_size(self):
-        # Calculate possible one-step neighbours
-        # Each dimension can vary by 1 less than it's size
-        return reduce(operator.add, [x - 1 for x in self.axes])
-
-    def size(self):
-        return reduce(operator.mul, self.axes)
-
-    def dim_str(self):
-        ax = sorted(self.axes_by_size.items())
-        return '-'.join(['%sx%s' % (k, v) for k, v in ax])
-
-
 class Patches(object):
     """Contains an array of patches with associated data
 
@@ -214,6 +169,14 @@ class Landscape(object):
     def data(self):
         return self.patches.patch_array_flat
 
+    def get_fitness(self):
+        return self.data['fitness']
+
+    def set_fitness(self, f):
+        self.data['fitness'] = f
+
+    fitness = property(get_fitness, set_fitness)
+
     # Emulate a readonly container
     def __getitem__(self, i):
         return self.patches.patch_array_flat[i]
@@ -236,7 +199,7 @@ class NKLandscape(Landscape):
         Landscape.__init__(self, dims, cache_path)  # Base class construction
         self.generate_parameter_fitnesses(seed, K)
         self.assign_patch_fitnesses()
-        self.normalize_fitnesses()
+        self.finalize()
 
     def __repr__(self):
         return "NKLandscape<dims:%s>" % (self.dims.dim_str())
@@ -355,19 +318,38 @@ class NKLandscape(Landscape):
             # Assign the average
             p['fitness'] = fit / ndims
 
-    def normalize_fitnesses(self):
-        # TODO Now Normalise the fitnesses
+    def finalize(self):
+        self.normalize_volume()
+
+    def normalize_fitness(self):
         fit = self.data['fitness']
         minfit = min(fit)
         maxfit = max(fit)
         normed = (fit - minfit) * 1.0 / (maxfit - minfit)
         self.data['fitness'] = normed
-        self.calculate_patch_significance()
 
-    def calculate_patch_significance(self):
+    def normalize_volume(self):
         fit = self.data['fitness']
         total = sum(fit)
-        self.data['significance'] = fit / total
+        self.data['fitness'] = fit / total
+
+    def raise_water(self, proportion_to_cover=.5):
+        if proportion_to_cover <= 0.0 or proportion_to_cover >= 1.0:
+            log.error("The proportion_to_cover should be greater than zero and less "
+                      "that 1.0, you've set it to %s", proportion_to_cover)
+            raise RuntimeError
+        fit = self.data['fitness']
+        cutoff = int(round(proportion_to_cover * len(fit)))
+
+        # Sort and find the max amount we want
+        fitsort = numpy.sort(fit)
+        maxsize = fitsort[cutoff - 1]
+
+        # Now set everything else to zero and finalize
+        newfit = numpy.where(fit <= maxsize, 0.0, fit)
+
+        self.data['fitness'] = newfit
+        self.finalize()
 
     def squish_bottom(self, squish_from, squish_to, scaling=1.0):
         """
@@ -388,6 +370,7 @@ class NKLandscape(Landscape):
             log.error("squish_from needs to be great than squish_to")
             raise RuntimeError
 
+        self.normalize_fitness()
         fit = self.data['fitness']
         # We only affect everything below squish_from
         lower_indexes = numpy.where(fit < squish_from)
@@ -403,4 +386,24 @@ class NKLandscape(Landscape):
         fit[lower_indexes] = lower
 
         # Need to renormalize, cos now the lowest value is squish_to
-        self.normalize_fitnesses()
+        self.finalize()
+
+    def fast_find_peaks(self):
+        n = self.data['neighbours']
+        f = self.data['fitness']
+        # Where is the fitness always greater than the neighbours?
+        return numpy.where(f > f[n].max(axis=1))[0]
+
+    def find_peaks(self):
+        peaks = []
+        for p in self.patches.patch_array_flat:
+            bestf = p['fitness']
+            for neighbour_i in p['neighbours']:
+                otherp = self.patches.patch_array_flat[neighbour_i]
+                otherf = otherp['fitness']
+                if otherf > bestf:
+                    break
+            else:
+                # Ok, we got here, so no others are better
+                peaks.append(p['index'])
+        return peaks

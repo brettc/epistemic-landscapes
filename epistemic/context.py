@@ -7,6 +7,7 @@ import parameters
 import analysis
 import agent
 import landscape
+import dimensions
 
 
 class Context(pytreatments.Context):
@@ -21,7 +22,7 @@ class Context(pytreatments.Context):
         self.defaults = {}
 
     def landscape(self, seed, k, dims):
-        d = landscape.Dimensions(dims)
+        d = dimensions.Dimensions(dims)
         l = landscape.NKLandscape(
             d, K=k, seed=seed, cache_path=self.config.cache_path)
 
