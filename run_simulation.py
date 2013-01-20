@@ -74,6 +74,7 @@ def main():
         except KeyboardInterrupt:
             log.error("User interrupted the Program")
         except epistemic.pytreatments.Interrupt:
+            # Should already be reported
             pass
 
     return 1
