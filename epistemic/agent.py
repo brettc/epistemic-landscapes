@@ -42,7 +42,6 @@ class Agent(object):
         self.patch = None
 
         self.visited = set()
-        self.place_randomly()
 
     def __repr__(self):
         return "<Agent: %s>" % (self.serial)
@@ -77,10 +76,6 @@ class Agent(object):
         if f > self.best:
             self.best = f
 
-    def place_randomly(self):
-        choice = self.sim.random.randint(0, len(self.sim.landscape))
-        p = self.sim.landscape[choice]
-        self.move(p)
 
     def randomly_choose(self, choices):
         if choices:

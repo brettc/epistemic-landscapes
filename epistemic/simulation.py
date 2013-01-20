@@ -1,10 +1,10 @@
 import logging
 log = logging.getLogger("simulation")
 
-import pytreatments
-
-import agent
 import numpy
+import pytreatments
+import agent
+import placement
 
 
 class Simulation(pytreatments.Simulation):
@@ -22,8 +22,25 @@ class Simulation(pytreatments.Simulation):
         log.info("Constructing Agents...")
         self.next_serial = 0
         self.agents = []
-        for cls, num in self.parameters.agents.items():
-            self.agents.extend([cls(self) for i in range(num)])
+        self.default_placement = placement.random_placement()
+        self.default_placement.sim = self
+        self.placements = set([self.default_placement])
+
+        for cls, num, pc in self.parameters.agents_to_create:
+            new_agents = [cls(self) for i in range(num)]
+            if pc is None:
+                pc = self.default_placement
+            elif pc not in self.placements:
+                pc.sim = self
+                self.placements.add(pc)
+
+            # Add to simulation and to the placement algorithm
+            self.agents.extend(new_agents)
+            pc.agents.extend(new_agents)
+
+        for p in self.placements:
+            p.place()
+
 
     def step(self):
         log.info("Stepping ...")

@@ -1,14 +1,8 @@
 import logging
 log = logging.getLogger("landscape")
 
-# import
 import numpy
 from numpy import random as numpy_random
-import operator
-import itertools
-import os
-import cPickle as pickle
-import agent
 import patches
 
 
@@ -21,7 +15,6 @@ def sample_without_repeats(M, N):
 class Landscape(object):
     """Maybe we'll manually define one later, so keep a base class"""
     def __init__(self, dims, cache_path=None):
-        self.dims = dims
         self.patches = patches.Patches(dims, cache_path)
 
     def clear(self):
@@ -57,14 +50,17 @@ class NKLandscape(Landscape):
     have more the 2 (binary) discrete values
 
     """
-    def __init__(self, dims, seed=None, K=0, cache_path=None):
+    def __init__(self, dims, seed=None, K=0, cover=None, cache_path=None):
         Landscape.__init__(self, dims, cache_path)  # Base class construction
         self.generate_parameter_fitnesses(seed, K)
         self.assign_patch_fitnesses()
-        self.finalize()
+        if cover is not None:
+            self.raise_water(cover=cover)
+        else:
+            self.finalize()
 
     def __repr__(self):
-        return "NKLandscape<dims:%s>" % (self.dims.dim_str())
+        return "NKLandscape<dims:%s>" % (self.patches.dims.dim_str())
 
     def generate_parameter_fitnesses(self, seed, K):
         """Generate fitnesses for the patches
@@ -106,7 +102,7 @@ class NKLandscape(Landscape):
         parameter.
         """
         numpy_random.seed(seed)
-        N = self.dims.dimensionality()
+        N = self.patches.dims.dimensionality()
 
         # The fitness of each parameter depends on itself and K other
         # parameters...
@@ -140,7 +136,7 @@ class NKLandscape(Landscape):
         # Go through each dimension and generate a set of values for it
         for i in range(N):
             # Get the sizes of the dependent axes for this parameter
-            dnum = [self.dims.axes[d] for d in dependencies[i]]
+            dnum = [self.patches.dims.axes[d] for d in dependencies[i]]
             # Generate it using the same shape we'll need
             # TODO Think about whether we we use uniform random?
             parameter_fitnesses.append(numpy_random.uniform(0, 1, dnum))
@@ -157,7 +153,7 @@ class NKLandscape(Landscape):
         log.info("Assigning NK fitnesses to patches...")
 
         # We'll use these over and over
-        ndims = self.dims.dimensionality()
+        ndims = self.patches.dims.dimensionality()
         deps_and_fits = zip(self.dependencies, self.parameter_fitnesses)
 
         # TODO Should pbly swap the loops here. It might be faster...
@@ -195,13 +191,13 @@ class NKLandscape(Landscape):
         total = sum(fit)
         self.data['fitness'] = fit / total
 
-    def raise_water(self, proportion_to_cover=.5):
-        if proportion_to_cover <= 0.0 or proportion_to_cover >= 1.0:
-            log.error("The proportion_to_cover should be greater than zero and less "
-                      "that 1.0, you've set it to %s", proportion_to_cover)
+    def raise_water(self, cover=.5):
+        if cover <= 0.0 or cover >= 1.0:
+            log.error("The cover should be greater than zero and less "
+                      "that 1.0, you've set it to %s", cover)
             raise RuntimeError
         fit = self.data['fitness']
-        cutoff = int(round(proportion_to_cover * len(fit)))
+        cutoff = int(round(cover * len(fit)))
 
         # Sort and find the max amount we want
         fitsort = numpy.sort(fit)

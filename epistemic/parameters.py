@@ -19,7 +19,7 @@ class Parameters(pytreatments.Parameters):
     significance_cutoff = .5
 
     def __init__(self, **kwargs):
-        self.agents = {}
+        self.agents_to_create = []
         for k, v in kwargs.items():
             if hasattr(self, k):
                 log.info("Setting '%s' to %s", k, v)
@@ -27,12 +27,12 @@ class Parameters(pytreatments.Parameters):
             else:
                 log.warning("'%s' is not a valid parameter (ignoring)", k)
 
-    def set_agents(self, kind, number):
-        self.agents[kind] = number
+    def add_agents(self, kind, number, placement=None):
+        self.agents_to_create.append((kind, number, placement))
 
     def freeze(self):
-        # Need to go a bit deeper with agents
+        # Need to go a bit deeper with agents_to_create
         c = copy.copy(self)
-        c.agents = self.agents.copy()
+        c.agents_to_create = self.agents_to_create.copy()
         return c
 

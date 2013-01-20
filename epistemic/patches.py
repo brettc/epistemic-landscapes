@@ -7,6 +7,7 @@ import itertools
 import os
 import cPickle as pickle
 import agent
+import dimensions
 
 
 class Patches(object):
@@ -16,6 +17,8 @@ class Patches(object):
     """
     def __init__(self, dims, cache_path=None):
 
+        self.dims = dimensions.Dimensions(dims)
+
         if cache_path is not None:
             cache_path = os.path.join(cache_path, dims.ident())
             if os.path.exists(cache_path):
@@ -23,7 +26,9 @@ class Patches(object):
                 return
 
         # These reference the same data, they are just indexed differently
-        self.patch_array = numpy.zeros(dims.axes, self.make_dtype(dims))
+        self.patch_array = numpy.zeros(
+                self.dims.axes,
+                self.make_dtype())
         self.patch_array_flat = self.patch_array.ravel()
 
         log.info("Created an array of %d patches", len(self.patch_array_flat))
@@ -31,8 +36,8 @@ class Patches(object):
         # Assign the patches a unique id (their index in the array)
         self.patch_array_flat['index'] = numpy.arange(
             self.patch_array_flat.size)
-        self.generate_indexes(dims)
-        self.generate_neighbours(dims)
+        self.generate_indexes()
+        self.generate_neighbours()
 
         if cache_path is not None:
             self.save_to_cache(cache_path)
@@ -48,9 +53,10 @@ class Patches(object):
         pickle.dump(self.patch_array, f, -1)
         log.info("Saved patches to cache '%s'", cache_path)
 
-    def generate_indexes(self, dims):
+    def generate_indexes(self):
         """Go through every single combination, and generate the values
         """
+        dims = self.dims
         ranges = tuple([range(x) for x in dims.axes])
 
         # We generate every possible combination of parameters here...
@@ -58,9 +64,11 @@ class Patches(object):
         for i, values in enumerate(itertools.product(*ranges)):
             self.patch_array_flat['values'][i] = numpy.array(values)
 
-    def generate_neighbours_slow(self, dims):
+    def generate_neighbours_slow(self):
         log.info("Generating neigbourhoods for %d patches ...",
                  len(self.patch_array_flat))
+
+        dims = self.dims
 
         # # Make a lookup table, so we can find the neighbours
         lookup = dict([(tuple(p['values']), p) for p in self.patch_array_flat])
@@ -97,10 +105,11 @@ class Patches(object):
                     # Go to the next neighbour
                     neighbour_i += 1
 
-    def generate_neighbours_fast(self, dims):
+    def generate_neighbours_fast(self):
         log.info("Generating neigbourhoods for %d patches ...",
                  len(self.patch_array_flat))
 
+        dims = self.dims
         for patch_i, p in enumerate(self.patch_array_flat):
             neighbour_i = 0
 
@@ -129,7 +138,7 @@ class Patches(object):
                     # Go to the next neighbour
                     neighbour_i += 1
 
-    def make_dtype(self, dims):
+    def make_dtype(self):
         """Return a data type for constructing a numpy array
 
         This allows us to keep all the data in one big array.
@@ -152,8 +161,8 @@ class Patches(object):
 
             # Lookups, so we can easily find neighbours.
             # We generate this stuff above
-            ('values', numpy.int32, dims.dimensionality()),
-            ('neighbours', numpy.int32, dims.neighbourhood_size()),
+            ('values', numpy.int32, self.dims.dimensionality()),
+            ('neighbours', numpy.int32, self.dims.neighbourhood_size()),
 
             # This allows us to cache data in a python object during the
             # search
@@ -171,8 +180,7 @@ class Patches(object):
 
 
 def make_patches():
-    from dimensions import Dimensions
-    d = Dimensions()
+    d = dimensions.Dimensions()
     d.add_dimensions(2, 12)
     Patches(d)
 
