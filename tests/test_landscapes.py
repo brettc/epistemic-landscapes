@@ -47,7 +47,6 @@ def f_dimensions(request):
     return dims
 
 
-# TODO Something is wrong here -- they're getting created every time!
 @pytest.fixture(params=test_nk, scope='module')
 def f_landscape(request):
     """Generate Landscapes from the various dimensions"""
