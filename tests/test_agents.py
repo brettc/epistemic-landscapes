@@ -18,9 +18,9 @@ def tiny_sim(small_landscape):
         landscape=small_landscape,
         max_steps=10,
     )
-    p.set_agents(agent.Maverick, 5)
-    p.set_agents(agent.Drunk, 5)
-    p.set_agents(agent.Follower, 5)
+    p.add_agents(agent.Maverick, 5)
+    p.add_agents(agent.Drunk, 5)
+    p.add_agents(agent.Follower, 5)
     s = simulation.Simulation(p)
     return s
 

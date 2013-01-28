@@ -26,13 +26,14 @@ def test_boolean_dimensions():
 
 # Test everything for a range of dimension from little to big
 test_dimensions = [
-    ((2, 4), (4, 4)),
+    # ((2, 4), (4, 4)),
     # ((2, 8), (3, 2)),
     ((2, 12),),
 ]
 
 # Test K for different values
-all_k = range(4)
+# all_k = range(4)
+all_k = range(2)
 
 # Test both against each other
 test_nk = [x for x in itertools.product(test_dimensions, all_k)]
@@ -103,7 +104,7 @@ def test_bad_waterline(f_tiny_landscape):
 
 
 def test_waterline(f_landscape):
-    f_landscape.raise_water(proportion_to_cover=.5)
+    f_landscape.raise_water(cover=.5)
     fit = f_landscape.fitness
     zeros = numpy.where(fit == 0.0)[0]
 

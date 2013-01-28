@@ -19,7 +19,7 @@ class TraceAgent(object):
         if self.old == self.new:
             self.stuck += 1
         self.old = self.new
-        self.new = self.agent.patch['index']
+        self.new = self.agent.location.index
         self.report(output)
 
     def report(self, output):

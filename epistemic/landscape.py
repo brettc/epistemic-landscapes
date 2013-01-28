@@ -34,13 +34,13 @@ class Landscape(object):
 
     # Emulate a readonly container
     def __getitem__(self, i):
-        return self.patches.patch_array_flat[i]
+        return self.patches[i]
 
     def __len__(self):
-        return len(self.patches.patch_array_flat)
+        return self.patches.size
 
     def __iter__(self):
-        return iter(self.patches.patch_array_flat)
+        return iter(self.patches)
 
 
 class NKLandscape(Landscape):

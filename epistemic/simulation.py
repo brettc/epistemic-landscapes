@@ -9,7 +9,7 @@ import placement
 
 class Simulation(pytreatments.Simulation):
 
-    def begin(self):
+    def on_begin(self):
         log.info("Randomizing...")
         self.random = numpy.random.RandomState()
         self.random.seed(self.parameters.seed)
@@ -42,14 +42,14 @@ class Simulation(pytreatments.Simulation):
             p.place()
 
 
-    def step(self):
+    def on_step(self):
         log.info("Stepping ...")
         self.random.shuffle(self.agents)
         for a in self.agents:
             a.step()
         return True
 
-    def end(self):
+    def on_end(self):
         pass
 
     def agent_types(self):

@@ -39,84 +39,33 @@ class Agent(object):
         sim.next_serial += 1
 
         self.best = 0.0
-        self.patch = None
+        self.location = None
 
         self.visited = set()
 
     def __repr__(self):
-        return "<Agent: %s>" % (self.serial)
+        return "<%s: %s>" % (self.typename(), self.serial)
 
     @property
     def typename(self):
         return self.__class__.__name__
 
     def move(self, p):
-        if p is self.patch:
+        if p is self.location:
             # We're already there...
             return
 
-        # Update Patch stats
-        p['visits'] += 1
-        p['visits_by_type'][self.typeid] += 1
-
-        # Update the agent
-        self.patch = p
-
-        # Cache some useful local neighbourhood info about the patch
-        if p['cache'] == 0:
-            n = [self.sim.landscape[i] for i in self.patch['neighbours']]
-            p['cache'] = n
-
-        # Assign the current neighbours to agent
-        self.neighbours = p['cache']
+        p.visit(self)
 
         # Update Agent stats
-        self.visited.add(p['index'])
-        f = self.patch['fitness']
+        self.visited.add(p)
+        f = p.fitness
         if f > self.best:
             self.best = f
 
+        # Update the agent
+        self.location = p
 
-    def randomly_choose(self, choices):
-        if choices:
-            l = len(choices)
-            if l == 1:
-                return choices[0]
-            i = self.sim.random.randint(0, l)
-            return choices[i]
-
-        return None
-
-    def nominate_random(self):
-        return self.randomly_choose(self.neighbours)
-
-    def nominate_unvisited(self):
-        unvisited = [p for p in self.neighbours if p['visits'] == 0]
-        return self.randomly_choose(unvisited)
-
-    def nominate_random_visited(self):
-        visited = [p for p in self.neighbours if p['visits'] > 0]
-        return self.randomly_choose(visited)
-
-    def nominate_best_visited(self):
-        visited = [p for p in self.neighbours if p['visits'] > 0]
-        if not visited:
-            return None
-        if len(visited) == 1:
-            return visited[0]
-
-        # Find the best (equal)
-        # Start with impossible negative score
-        best_score = -1.0
-        for v in visited:
-            f = v['fitness']
-            if f > best_score:
-                best = [v]
-                best_score = f
-            elif f == best_score:
-                best.append(v)
-
-        return self.randomly_choose(best)
 
 
 #------------------------------------------------------------------------
@@ -127,7 +76,7 @@ class Agent(object):
 class Drunk(Agent):
     """The Drunk does a random walk"""
     def step(self):
-        p = self.nominate_random()
+        p = self.location.random_neighbour()
         self.move(p)
 
 
@@ -137,11 +86,11 @@ class Maverick(Agent):
     none are better it stays put.
     """
     def step(self):
-        p = self.nominate_unvisited()
+        p = self.location.unvisited_neighbour()
         if p is None:
             # Everything has been visited, so now find the best.
-            p = self.nominate_best_visited()
-            # if p['fitness'] < self.patch['fitness']:
+            p = self.location.best_neighbour()
+            # if p['fitness'] < self.location['fitness']:
                 # return
         self.move(p)
 
@@ -152,11 +101,11 @@ class Follower(Agent):
     worse then they simply stop. They do have a small experimentation rate.
     """
     def step(self):
-        p = self.nominate_best_visited()
+        p = self.location.best_neighbour()
         if p is None:
             # Everything has been visited; pick one at random.
-            p = self.nominate_random()
-        elif p['fitness'] < self.patch['fitness']:
+            p = self.location.random_neighbour()
+        elif p.fitness < self.location.fitness:
             # We're in the best spot
             # Very seldom, we'll move somewhere even though it's worse
             move_anyway = self.sim.random.uniform(0.0, 1.0)
@@ -164,6 +113,6 @@ class Follower(Agent):
                 # Stay put
                 return
             # Hm, maybe should select on basic of difference from current fit?
-            p = self.nominate_random()
+            p = self.location.random_neighbour()
 
         self.move(p)
