@@ -16,9 +16,10 @@ class Patches(object):
 
     This generates the neighbourhoods
     """
-    def __init__(self, dims, cache_path=None):
+    def __init__(self, dims, depth=1, cache_path=None):
 
         self.dims = dims
+        self.depth = depth
 
         if cache_path is not None:
             cache_path = os.path.join(cache_path, dims.ident())
@@ -208,23 +209,35 @@ class Patch(object):
         self._n = None
 
     def __repr__(self):
-        return "<Patch:{0.index:}|F:{0.fitness:0>4.4}>".format(self)
+        return "<P:{1:}|F:{0.fitness:0>4.4}>".format(self, "".join([str(v) for v in self.values]))
 
     @property
     def neighbours(self):
         if self._n is not None:
             return self._n
 
-        # Okay, let's work it out
-        self._n = [self._patches[i] for i in self._neighbours]
+        depth = self._patches.depth
+
+        fullset = set()
+        currset = set([self])
+        nextset = set()
+
+        while depth > 0:
+            for p in currset:
+                nextset.update([self._patches[i] for i in p._neighbours])
+            fullset |= nextset
+            currset = nextset
+            nextset = set()
+            depth -= 1
+
+        self._n = list(fullset)
         return self._n
 
+    # TODO: We could do some clever updating of other patches here
     def visit(self, a):
         self.visits += 1
         self.visits_by_type[a.typeid] += 1
 
-        # TODO: We could do some clever updating of other patches here
-        #
     def randomly_choose(self, choices):
         if choices:
             l = len(choices)
@@ -268,8 +281,8 @@ class Patch(object):
 
 
 # We magically add some extra "simple" properties. This is just short-hand,
-# rather than manually adding a bunch of properties one at a time. It's also
-# easier to extend
+# rather than manually adding a bunch of properties exactly the same way. It's
+# also easier to extend
 def make_patch_property(pname):
     if pname.startswith('_'):
         fieldname = pname[1:]
@@ -285,29 +298,33 @@ def make_patch_property(pname):
     # Now add these functions into the class
     setattr(Patch, pname, property(getter, setter))
 
-simple_props = ('index', 'visits', 'visits_by_type', 'fitness', '_values',
+# This is the list of automatic properties.
+simple_props = ('index', 'visits', 'visits_by_type', 'fitness', 'values',
                 '_neighbours')
 
-# This is the list of automatic properties
+# Add all the automatic properties to the class
 for pname in simple_props:
     make_patch_property(pname)
 
 
-def make_patches():
+def test_patches():
     d = dimensions.Dimensions()
-    d.add_dimensions(2, 4)
-    ps = Patches(d)
-    p = ps[0]
-    print p
-    print p.visits
-    p.visits = 10
-    p.fitness = 3.5
-    ps[5].fitness = 5.0
-    print ps.patch_array_flat
-    print ps[5].neighbours
+    d.add_dimensions(2, 8)
+    d.add_dimensions(3, 2)
+    ps1 = Patches(d, depth=1)
+    ps2 = Patches(d, depth=2)
+    # p = ps[0]
+    # print p
+    # print p.visits
+    # p.visits = 10
+    # p.fitness = 3.5
+    # ps[5].fitness = 5.0
+    # print ps.patch_array_flat
+    print ps1[0].neighbours
+    print ps2[0].neighbours
 
 if __name__ == "__main__":
-    make_patches()
+    test_patches()
     # from timeit import Timer
     # t = Timer("make_patches()", "from __main__ import make_patches")
     # print t.timeit(number=1)
