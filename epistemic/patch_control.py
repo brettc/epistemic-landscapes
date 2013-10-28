@@ -48,7 +48,7 @@ class Patch(object):
         self._n = None
 
     def __repr__(self):
-        return "<P:{}|F:{0.fitness:0>4.4}>".format(
+        return "<P:{1:}|F:{0.fitness:0>4.4}>".format(
             self, "".join([str(v) for v in self.values]))
 
     @property

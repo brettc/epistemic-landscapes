@@ -21,7 +21,7 @@ def tiny_sim(small_landscape):
     p.add_agents(agent.Maverick, 5)
     p.add_agents(agent.Drunk, 5)
     p.add_agents(agent.Follower, 5)
-    s = simulation.Simulation(p)
+    s = simulation.Simulation(0, "Test", 0, p)
     return s
 
 

@@ -20,11 +20,11 @@ def pytest_generate_tests(metafunc):
     if 'script_name' in metafunc.fixturenames:
         metafunc.parametrize("script_name", get_scripts())
 
-
-def test_scripts(script_name):
-    pth = os.path.join(HERE, script_name)
-    cfg = config.Configuration(simulation.Simulation, True)
-    ctx = context.Context(cfg)
-    sct = script.Script(ctx)
-    sct.load(pth)
-    cfg.experiment.run(None)
+# TODO Redo the scripting tests
+# def test_scripts(script_name):
+#     pth = os.path.join(HERE, script_name)
+#     cfg = config.Configuration(simulation.Simulation, True)
+#     ctx = context.Context(cfg)
+#     sct = script.Script(ctx)
+#     sct.load(pth)
+#     cfg.experiment.run(None)
