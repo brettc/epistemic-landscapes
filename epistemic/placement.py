@@ -1,8 +1,6 @@
 import logging
 log = logging.getLogger("placement")
 
-import agent
-
 placement_classes = set()
 
 
@@ -21,7 +19,7 @@ class Placement(object):
     def place(self):
         raise NotImplementedError
 
-    def find_low_signifance(self):
+    def find_low_significance(self):
         pass
 
 

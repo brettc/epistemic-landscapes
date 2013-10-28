@@ -1,4 +1,5 @@
 import logging
+
 log = logging.getLogger("simulation")
 
 import numpy
@@ -9,7 +10,6 @@ import patch_control
 
 
 class Simulation(pytreatments.Simulation):
-
     def __init__(self, seed, treatment_name, replicate_seq, parameters):
         pytreatments.Simulation.__init__(
             self, seed, treatment_name, replicate_seq)
@@ -17,25 +17,28 @@ class Simulation(pytreatments.Simulation):
         log.info("Randomizing...")
         self.random = numpy.random.RandomState()
         self.random.seed(self.parameters.seed)
-
-    @property
-    def begin(self):
-        log.info("Clearing Landscape...")
         self.landscape = self.parameters.landscape
-        self.landscape.clear()
         self.patch_controller = patch_control.PatchController(
             patches=self.landscape.patches,
             depth=self.parameters.neighbourhood_size,
-            random_state = self.random
+            random_state=self.random
         )
-
-        log.info("Constructing Agents...")
-        self.next_serial = 0
         self.agents = []
+        self.next_serial = 0
         self.default_placement = placement.random_placement()
         self.default_placement.sim = self
         self.placements = {self.default_placement}
 
+    @property
+    def begin(self):
+        log.info("Clearing Landscape...")
+        # Note that this is necessary because we SHARE landscape data
+        # TODO: This should pbly be fixed, so that we have STATIC and DYNAMIC
+        # arrays...
+
+        self.landscape.clear()
+
+        log.info("Constructing Agents...")
         for cls, num, pc in self.parameters.agents_to_create:
             new_agents = [cls(self) for i in range(num)]
             if pc is None:

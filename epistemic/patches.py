@@ -8,7 +8,6 @@ import itertools
 import os
 import cPickle as pickle
 import agent
-import dimensions
 
 
 class Patches(object):
