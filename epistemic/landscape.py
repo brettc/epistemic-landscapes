@@ -6,16 +6,17 @@ from numpy import random as numpy_random
 import patches
 
 
-# See here:
-# http://numpy-discussion.10968.n7.nabble.com/Generating-random-samples-without-repeats-td25666.html
+# From here:
+# http://numpy-discussion.10968.n7.nabble.com/
+# Generating-random-samples-without-repeats-td25666.html
 def sample_without_repeats(M, N):
     return numpy.random.rand(M).argsort()[:N]
 
 
 class Landscape(object):
     """Maybe we'll manually define one later, so keep a base class"""
-    def __init__(self, dims, cache_path=None):
-        self.patches = patches.Patches(dims, cache_path)
+    def __init__(self, dims, depth=1, cache_path=None):
+        self.patches = patches.Patches(dims, depth=depth, cache_path=cache_path)
 
     def clear(self):
         self.patches.clear()
@@ -50,8 +51,9 @@ class NKLandscape(Landscape):
     have more the 2 (binary) discrete values
 
     """
-    def __init__(self, dims, seed=None, K=0, cover=None, cache_path=None):
-        Landscape.__init__(self, dims, cache_path)  # Base class construction
+    def __init__(self, dims, seed=None, K=0,
+                 cover=None, depth=1, cache_path=None):
+        Landscape.__init__(self, dims, depth=depth, cache_path=cache_path)
         self.generate_parameter_fitnesses(seed, K)
         self.assign_patch_fitnesses()
         if cover is not None:

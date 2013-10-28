@@ -60,7 +60,7 @@ class Row(object):
 
 
 @plugin.register_plugin
-class summary(plugin.ExperimentPlugin):
+class summary(plugin.Plugin):
 
     def begin_experiment(self):
         self.output_file = self.get_file('summary.csv')

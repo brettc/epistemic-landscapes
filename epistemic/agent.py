@@ -89,7 +89,7 @@ class Maverick(Agent):
         p = self.location.unvisited_neighbour()
         if p is None:
             # Everything has been visited, so now find the best.
-            p = self.location.best_neighbour()
+            p = self.location.best_neighbour
             # if p['fitness'] < self.location['fitness']:
                 # return
         self.move(p)
@@ -101,7 +101,7 @@ class Follower(Agent):
     worse then they simply stop. They do have a small experimentation rate.
     """
     def step(self):
-        p = self.location.best_neighbour()
+        p = self.location.best_neighbour
         if p is None:
             # Everything has been visited; pick one at random.
             p = self.location.random_neighbour()

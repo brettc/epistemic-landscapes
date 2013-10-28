@@ -46,7 +46,7 @@ class TraceAgent(object):
                 # )
 
 @plugin.register_plugin
-class trace(plugin.ReplicatePlugin):
+class trace(plugin.Plugin):
     def begin_replicate(self, sim):
         self.output = self.get_file('trace.txt')
         self.tracers = [TraceAgent(a, self.output) for a in sim.agents]

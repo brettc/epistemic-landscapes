@@ -6,44 +6,49 @@ from ..pytreatments import plugin
 import numpy
 import csv
 
+# TODO: Add these back in
+has_rpy = False
+has_pyx = False
+
 # try:
     # from rpy2.robjects.packages import importr
     # from rpy2.robjects import DataFrame, IntVector, FloatVector
     # import rpy2.robjects.lib.ggplot2 as g2
     # has_rpy = True
 # except:
-has_rpy = False
+#   has_pyx = False
 
-try:
-    from pyx import *
-
-    # Let's use some nice fonts -- I hate the default shite Latex stuff
-    # Not xetex unfortunately...
-    text.set(mode="latex")
-    text.preamble(r"""\renewcommand{\familydefault}{\sfdefault}""")
-    text.preamble(r"""\usepackage{amsmath}""")
-    text.preamble(r"""\usepackage{cmbright}""")
-    has_pyx = True
-
-except:
-    has_pyx = False
+# try:
+#     from pyx import *
+#
+#     # Let's use some nice fonts -- I hate the default shite Latex stuff
+#     # Not xetex unfortunately...
+#     text.set(mode="latex")
+#     text.preamble(r"""\renewcommand{\familydefault}{\sfdefault}""")
+#     text.preamble(r"""\usepackage{amsmath}""")
+#     text.preamble(r"""\usepackage{cmbright}""")
+#     has_pyx = True
+#
+# except:
+#     has_pyx = False
 
 
 @plugin.register_plugin
-class series(plugin.ReplicatePlugin):
+class series(plugin.Plugin):
 
-    def begin_replicate(self, sim):
-
+    def begin_simulation(self, sim):
+        self.sim = sim
         self.agent_types = sim.agent_types()
-        dtype = numpy.dtype([
+        self.dtype = numpy.dtype([
             # Timestep
             ('t', numpy.int32),
             ('explored', numpy.float64),
             ('explored_by_type', numpy.float64, len(self.agent_types))
             ])
 
+    def begin_replicate(self):
         # Preallocate the array
-        self.data = numpy.zeros(sim.parameters.max_steps, dtype)
+        self.data = numpy.zeros(sim.parameters.max_steps, self.dtype)
 
     def step(self, sim):
         """Gather all the series data"""
@@ -69,8 +74,8 @@ class series(plugin.ReplicatePlugin):
 
         # if has_rpy:
             # self.create_rpy_graph()
-        if has_pyx:
-            self.create_pyx_graph()
+        # if has_pyx:
+        #     self.create_pyx_graph()
 
     def calc_explored(self, record, sim):
         """How much of the total space is currently explored?"""

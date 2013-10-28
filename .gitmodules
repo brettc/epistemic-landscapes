@@ -1,0 +1,3 @@
+[submodule "pytreatments"]
+	path = pytreatments
+	url = git@github.com:brettc/pytreatments
