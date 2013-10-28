@@ -1,4 +1,5 @@
 import logging
+
 log = logging.getLogger("patches")
 
 # import
@@ -8,7 +9,6 @@ import os
 import cPickle as pickle
 import agent
 import dimensions
-from pytreatments import active
 
 
 class Patches(object):
@@ -16,6 +16,7 @@ class Patches(object):
 
     This generates the neighbourhoods
     """
+
     def __init__(self, dims, depth=1, cache_path=None):
 
         self.dims = dims
@@ -44,24 +45,6 @@ class Patches(object):
         if cache_path is not None:
             self.save_to_cache(cache_path)
 
-    @property
-    def size(self):
-        return len(self.patch_array_flat)
-
-    def __len__(self):
-        return self.size
-
-    def __iter__(self):
-        for i in range(self.size):
-            yield self[i]
-
-    def __getitem__(self, i):
-        if self.patch_array_flat['cache'][i] == 0:
-            p = Patch(self, i)
-            self.patch_array_flat['cache'][i] = p
-            return p
-
-        return self.patch_array_flat['cache'][i]
 
     def load_from_cache(self, cache_path):
         f = open(cache_path, 'rb')
@@ -86,7 +69,7 @@ class Patches(object):
             self.patch_array_flat['values'][i] = numpy.array(values)
 
     def generate_neighbours_slow(self):
-        log.info("Generating neigbourhoods for %d patches ...",
+        log.info("Generating neighbourhoods for %d patches ...",
                  len(self.patch_array_flat))
 
         dims = self.dims
@@ -127,7 +110,8 @@ class Patches(object):
                     neighbour_i += 1
 
     def generate_neighbours_fast(self):
-        log.info("Generating neigbourhoods for %d patches ...",
+        # TODO: Note that this is currently fucked
+        log.info("Generating neighbourhoods for %d patches ...",
                  len(self.patch_array_flat))
 
         dims = self.dims
@@ -167,7 +151,7 @@ class Patches(object):
         for fast manipulation.
         """
 
-        # TODO Move this data structure out somewhere else?
+        # TODO: Move this data structure out somewhere else?
         #
         return numpy.dtype([
             # Unique id for each patch
@@ -196,138 +180,7 @@ class Patches(object):
         for c in self.clear_list:
             self.patch_array_flat[c] = 0
 
-    # The fast one is currently slower and wrong!
+    # TODO: The fast one is currently slower and wrong!
     generate_neighbours = generate_neighbours_slow
 
 
-class Patch(object):
-    """This just provides simplified Object-Like access to the patch array"""
-
-    def __init__(self, patches, index):
-        self._patches = patches
-        self._p = patches.patch_array_flat[index]
-        self._n = None
-
-    def __repr__(self):
-        return "<P:{1:}|F:{0.fitness:0>4.4}>".format(self, "".join([str(v) for v in self.values]))
-
-    @property
-    def neighbours(self):
-        if self._n is not None:
-            return self._n
-
-        depth = self._patches.depth
-
-        fullset = set()
-        currset = set([self])
-        nextset = set()
-
-        while depth > 0:
-            for p in currset:
-                nextset.update([self._patches[i] for i in p._neighbours])
-            fullset |= nextset
-            currset = nextset
-            nextset = set()
-            depth -= 1
-
-        self._n = list(fullset)
-        return self._n
-
-    # TODO: We could do some clever updating of other patches here
-    def visit(self, a):
-        self.visits += 1
-        self.visits_by_type[a.typeid] += 1
-
-    def randomly_choose(self, choices):
-        if choices:
-            l = len(choices)
-            if l == 1:
-                return choices[0]
-            i = active.sim.random.randint(0, l)
-            return choices[i]
-
-        return None
-
-    def random_neighbour(self):
-        return self.randomly_choose(self.neighbours)
-
-    def unvisited_neighbour(self):
-        unvisited = [p for p in self.neighbours if p.visits == 0]
-        return self.randomly_choose(unvisited)
-
-    def visited_neighbour(self):
-        visited = [p for p in self.neighbours if p.visits > 0]
-        return self.randomly_choose(visited)
-
-    def best_neighbour(self):
-        visited = [p for p in self.neighbours if p.visits > 0]
-        if not visited:
-            return None
-        if len(visited) == 1:
-            return visited[0]
-
-        # Find the best (equal)
-        # Start with impossible negative score
-        best_score = -1.0
-        for v in visited:
-            f = v.fitness
-            if f > best_score:
-                best = [v]
-                best_score = f
-            elif f == best_score:
-                best.append(v)
-
-        return self.randomly_choose(best)
-
-
-# We magically add some extra "simple" properties. This is just short-hand,
-# rather than manually adding a bunch of properties exactly the same way. It's
-# also easier to extend
-def make_patch_property(pname):
-    if pname.startswith('_'):
-        fieldname = pname[1:]
-    else:
-        fieldname = pname
-
-    def getter(self):
-        return self._p[fieldname]
-
-    def setter(self, x):
-        self._p[fieldname] = x
-
-    # Now add these functions into the class
-    setattr(Patch, pname, property(getter, setter))
-
-# This is the list of automatic properties.
-simple_props = ('index', 'visits', 'visits_by_type', 'fitness', 'values',
-                '_neighbours')
-
-# Add all the automatic properties to the class
-for pname in simple_props:
-    make_patch_property(pname)
-
-
-def test_patches():
-    d = dimensions.Dimensions()
-    d.add_dimensions(2, 8)
-    d.add_dimensions(3, 2)
-    ps1 = Patches(d, depth=1)
-    ps2 = Patches(d, depth=2)
-    # p = ps[0]
-    # print p
-    # print p.visits
-    # p.visits = 10
-    # p.fitness = 3.5
-    # ps[5].fitness = 5.0
-    # print ps.patch_array_flat
-    print ps1[0].neighbours
-    print ps2[0].neighbours
-
-if __name__ == "__main__":
-    test_patches()
-    # from timeit import Timer
-    # t = Timer("make_patches()", "from __main__ import make_patches")
-    # print t.timeit(number=1)
-    # Patches.generate_neighbours = Patches.generate_neighbours_fast
-    # t = Timer("make_patches()", "from __main__ import make_patches")
-    # print t.timeit(number=1)

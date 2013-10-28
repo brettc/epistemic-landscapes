@@ -3,7 +3,7 @@ log = logging.getLogger("stats")
 
 # Mostly operations on landscapes.
 def percent_visited_above_x(patch_data, cutoff, agent_typeid=None):
-    assert cutoff > 0.0 and cutoff < 1.0
+    assert cutoff > 0.0 < 1.0
     fitness = patch_data['fitness']
 
     # Check out how easy numpy makes this kind of operation

@@ -11,7 +11,7 @@ if __name__ == "__main__":
     sys.exit(run_main(
         simulation.Simulation,
         context.Context,
-        history=None,
+        None,
         progress=None
     ))
 

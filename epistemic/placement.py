@@ -30,18 +30,19 @@ class random_placement(Placement):
     def place(self):
         log.info("Placing %d agents randomly", len(self.agents))
         for a in self.agents:
-            choice = self.sim.random.randint(0, len(self.sim.landscape))
-            p = self.sim.landscape[choice]
+            choice = self.sim.random.randint(0, len(self.sim.patch_controller))
+            p = self.sim.patch_controller[choice]
             a.move(p)
 
 
 @register_placement
 class point_placement(Placement):
+    # TODO: Fix this
 
     def place(self):
         log.info("Placing %d agents at a point p", len(self.agents))
         for a in self.agents:
-            p = self.sim.landscape[0]
+            p = self.sim.patch_controller[0]
             a.move(p)
 
 

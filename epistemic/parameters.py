@@ -2,18 +2,18 @@ import logging
 log = logging.getLogger("parameters")
 
 import copy
-import pytreatments
 
 class ParametersError(Exception):
     pass
 
-class Parameters(pytreatments.Parameters):
+class Parameters(object):
     # Put the default parameters here
     seed = 0
     landscape = None
     max_steps = 100
     # Followers move this often, even when the move is not better
     follower_move_p = .01
+    neighbourhood_size = 1
 
     # Anything above this is the good stuff
     significance_cutoff = .5
