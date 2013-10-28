@@ -11,8 +11,6 @@ from .. import stats
 class Row(object):
     def __init__(self, sim):
         self.sim = sim
-        self.treatment = sim.treatment.name
-        self.replicate = sim.treatment.replicate
 
     @staticmethod
     def basic_headers():
@@ -24,13 +22,12 @@ class Row(object):
 
     # NOTE: the ordering above should match to what is below
     def basic_data(self):
-
         pc = stats.percent_visited_above_x(
             self.sim.landscape.data,
             self.sim.parameters.significance_cutoff)
         return [
-            self.treatment,
-            str(self.replicate),
+            self.sim.treatment_name,
+            str(self.sim.replicate_seq),
             pc,
         ]
 
@@ -65,9 +62,20 @@ class summary(plugin.Plugin):
     def begin_experiment(self):
         self.output_file = self.get_file('summary.csv')
         self.csv_writer = csv.writer(self.output_file)
-        self.csv_writer.writerow(Row.basic_headers() + Row.count_headers() + Row.coverage_headers())
+        self.csv_writer.writerow(
+            Row.basic_headers() +
+            Row.count_headers() +
+            Row.coverage_headers()
+        )
 
-    def end_replicate(self, sim):
-        row = Row(sim)
-        self.csv_writer.writerow(row.basic_data() + row.count_data() + row.coverage_data())
+    def begin_simulation(self, sim):
+        self.sim = sim
+
+    def end_replicate(self):
+        row = Row(self.sim)
+        self.csv_writer.writerow(
+            row.basic_data() +
+            row.count_data() +
+            row.coverage_data()
+        )
         self.output_file.flush()

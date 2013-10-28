@@ -25,6 +25,9 @@ def percent_visited_above_x(patch_data, cutoff, agent_typeid=None):
     # How much of this has been visited
     fit_visited = sum(fitness[visited_above_cutoff] - cutoff)
 
-    pc_visited = fit_visited/fit_total
+    if fit_total == 0.0:
+        return 0.0
+
+    pc_visited = fit_visited / fit_total
     return pc_visited
 

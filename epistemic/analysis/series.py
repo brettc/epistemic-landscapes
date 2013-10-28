@@ -45,10 +45,7 @@ class series(plugin.Plugin):
             ('explored', numpy.float64),
             ('explored_by_type', numpy.float64, len(self.agent_types))
             ])
-
-    def begin_replicate(self):
-        # Preallocate the array
-        self.data = numpy.zeros(sim.parameters.max_steps, self.dtype)
+        self.data = numpy.zeros(self.sim.parameters.max_steps, self.dtype)
 
     def step(self, sim):
         """Gather all the series data"""
@@ -58,7 +55,7 @@ class series(plugin.Plugin):
         self.calc_explored_by_type(record, sim)
 
 
-    def end_replicate(self, sim):
+    def end_replicate(self):
         f = self.get_file('series.csv')
 
         # TODO automate this using dtypes...

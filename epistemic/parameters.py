@@ -29,10 +29,3 @@ class Parameters(object):
 
     def add_agents(self, kind, number, placement=None):
         self.agents_to_create.append((kind, number, placement))
-
-    def freeze(self):
-        # Need to go a bit deeper with agents_to_create
-        c = copy.copy(self)
-        c.agents_to_create = self.agents_to_create.copy()
-        return c
-

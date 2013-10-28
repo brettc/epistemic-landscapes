@@ -11,25 +11,28 @@ class TraceAgent(object):
         a._trace = self
 
         self.stuck = 0
-        self.new = None
-        self.old = 1
+        self.old = None
+        self.new = a.location
         self.update(output)
 
     def update(self, output):
         if self.old == self.new:
             self.stuck += 1
         self.old = self.new
-        self.new = self.agent.location.index
+        self.new = self.agent.location
         self.report(output)
 
     def report(self, output):
         # TODO Lot more could be said here. Also, we could output it to a
         # separate file rather than log it.
-        text = '%s %d moves from %s to %s: patches seen=%s, stuck=%s' % (
+
+        text = '%s %d moves from %s(%f) to %s(%f): patches seen=%s, stuck=%s' % (
             self.agent.typename,
             self.agent.serial,
-            self.old,
-            self.new,
+            self.old.index if self.old else -1,
+            self.old.fitness if self.old else 0.0,
+            self.new.index if self.new else -1,
+            self.new.fitness if self.old else 0.0,
             len(self.agent.visited),
             self.stuck
         )
@@ -47,7 +50,7 @@ class TraceAgent(object):
 
 @plugin.register_plugin
 class trace(plugin.Plugin):
-    def begin_replicate(self, sim):
+    def begin_simulation(self, sim):
         self.output = self.get_file('trace.txt')
         self.tracers = [TraceAgent(a, self.output) for a in sim.agents]
 

@@ -44,6 +44,15 @@ class Patches(object):
         if cache_path is not None:
             self.save_to_cache(cache_path)
 
+    def __getitem__(self, i):
+        return self.patch_array_flat[i]
+
+    @property
+    def size(self):
+        return len(self.patch_array_flat)
+
+    def __len__(self):
+        return self.size
 
     def load_from_cache(self, cache_path):
         f = open(cache_path, 'rb')
