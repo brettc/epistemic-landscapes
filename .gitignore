@@ -6,3 +6,4 @@ build
 .ropeproject/
 tags
 .cache/v/cache
+.idea
