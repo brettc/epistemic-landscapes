@@ -29,7 +29,6 @@ class Simulation(pytreatments.Simulation):
         self.default_placement.sim = self
         self.placements = {self.default_placement}
 
-    @property
     def begin(self):
         log.info("Clearing Landscape...")
         # Note that this is necessary because we SHARE landscape data
