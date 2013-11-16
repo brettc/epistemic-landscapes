@@ -112,6 +112,7 @@ def test_waterline(f_landscape):
     assert abs(sum(f_landscape.fitness) - 1.0) < 1e-5
 
 
+# TODO: Fix this
 @pytest.mark.xfail(reason="don't know")
 def test_peaks(f_landscape):
     assert set(f_landscape.find_peaks()) == set(f_landscape.fast_find_peaks())
