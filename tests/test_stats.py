@@ -49,8 +49,8 @@ def test_progress():
 
     st = stats.Stats(ps)
     assert_close_enough(st.coverage, .25)
-    assert_close_enough(st.per_agent[0].total, .5)
-    assert_close_enough(st.per_agent[1].total, .25)
+    assert_close_enough(st.per_agent[0].progress, .5)
+    assert_close_enough(st.per_agent[1].progress, .25)
     assert_close_enough(st.knowledge, .1 * 64)
     assert_close_enough(st.per_agent[0].knowledge, .1 * 128)
     # assert_close_enough(st.knowledge_gained_percent, .25)

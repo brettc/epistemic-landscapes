@@ -76,7 +76,7 @@ def test_dependencies(f_landscape):
 
 def test_neighbourhood(f_landscape):
     # Now check that the neighbours are what we think
-    parray = f_landscape.patches.patch_array_flat
+    parray = f_landscape.patches.array_flat
 
     for p in parray:
         vals = numpy.array(p['values'])
