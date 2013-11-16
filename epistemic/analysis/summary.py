@@ -6,55 +6,73 @@ import csv
 from ..pytreatments import plugin
 from .. import agent
 from .. import stats
+from ..simulation import Simulation
 
 
 class Row(object):
     def __init__(self, sim):
+        assert isinstance(sim, Simulation)
         self.sim = sim
+        self.st = stats.Stats(sim.patch_controller.patches)
 
     @staticmethod
     def basic_headers():
         return """
             treatment
             replicate
-            coverage
         """.strip().split()
 
     # NOTE: the ordering above should match to what is below
     def basic_data(self):
-        pc = stats.percent_visited_above_x(
-            self.sim.landscape.data,
-            self.sim.parameters.significance_cutoff)
         return [
             self.sim.treatment_name,
             str(self.sim.replicate_seq),
-            pc,
         ]
 
     @staticmethod
-    def coverage_headers():
-        return ['%s_coverage' % name for name in agent.get_agent_class_names()]
+    def stats_headers():
+        return """
+            count
+            coverage
+            progress
+            knowledge
+        """.strip().split()
 
-    def coverage_data(self):
-        cover = []
-        for i in range(agent.agent_types):
-            pc = stats.percent_visited_above_x(
-                self.sim.landscape.data,
-                self.sim.parameters.significance_cutoff,
-                i)
-            cover.append(pc)
-        return cover
+    def stats_data(self):
+        return [
+            len(self.sim.agents),
+            self.st.coverage,
+            self.st.progress,
+            self.st.knowledge,
+            ]
 
     @staticmethod
-    def count_headers():
-        return ['%s_count' % name for name in agent.get_agent_class_names()]
+    def stats_agent_headers():
+        snames = Row.stats_headers()
+        anames = agent.get_agent_class_names()
 
-    def count_data(self):
-        cnt = [0] * agent.agent_types
+        headers = []
+        for nm in anames:
+            for s in snames:
+                headers.append("{}_{}".format(nm, s))
+        return headers
+
+
+    def stats_agent_data(self):
+        counts = [0] * agent.agent_types
         for a in self.sim.agents:
-            cnt[a.typeid] += 1
-        return cnt
+            counts[a.typeid] += 1
 
+        data = []
+        for i in range(agent.agent_types):
+            data.extend([
+                counts[i],
+                self.st.per_agent[i].coverage,
+                self.st.per_agent[i].progress,
+                self.st.per_agent[i].knowledge,
+            ])
+
+        return data
 
 @plugin.register_plugin
 class summary(plugin.Plugin):
@@ -64,8 +82,8 @@ class summary(plugin.Plugin):
         self.csv_writer = csv.writer(self.output_file)
         self.csv_writer.writerow(
             Row.basic_headers() +
-            Row.count_headers() +
-            Row.coverage_headers()
+            Row.stats_headers() +
+            Row.stats_agent_headers()
         )
 
     def begin_simulation(self, sim):
@@ -75,7 +93,7 @@ class summary(plugin.Plugin):
         row = Row(self.sim)
         self.csv_writer.writerow(
             row.basic_data() +
-            row.count_data() +
-            row.coverage_data()
+            row.stats_data() +
+            row.stats_agent_data()
         )
         self.output_file.flush()

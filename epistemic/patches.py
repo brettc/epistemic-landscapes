@@ -28,16 +28,16 @@ class Patches(object):
                 return
 
         # These reference the same data, they are just indexed differently
-        self.patch_array = numpy.zeros(
+        self.array_dimmed = numpy.zeros(
             self.dims.axes,
             self.make_dtype())
-        self.patch_array_flat = self.patch_array.ravel()
+        self.array_flat = self.array_dimmed.ravel()
 
-        log.info("Created an array of %d patches", len(self.patch_array_flat))
+        log.info("Created an array of %d patches", len(self.array_flat))
 
         # Assign the patches a unique id (their index in the array)
-        self.patch_array_flat['index'] = numpy.arange(
-            self.patch_array_flat.size)
+        self.array_flat['index'] = numpy.arange(
+            self.array_flat.size)
         self.generate_indexes()
         self.generate_neighbours()
 
@@ -45,24 +45,24 @@ class Patches(object):
             self.save_to_cache(cache_path)
 
     def __getitem__(self, i):
-        return self.patch_array_flat[i]
+        return self.array_flat[i]
 
     @property
     def size(self):
-        return len(self.patch_array_flat)
+        return self.array_flat.size
 
     def __len__(self):
         return self.size
 
     def load_from_cache(self, cache_path):
         f = open(cache_path, 'rb')
-        self.patch_array = pickle.load(f)
-        self.patch_array_flat = self.patch_array.ravel()
+        self.array_dimmed = pickle.load(f)
+        self.array_flat = self.array_dimmed.ravel()
         log.info("Loaded patches from cache '%s'", cache_path)
 
     def save_to_cache(self, cache_path):
         f = open(cache_path, 'wb')
-        pickle.dump(self.patch_array, f, -1)
+        pickle.dump(self.array_dimmed, f, -1)
         log.info("Saved patches to cache '%s'", cache_path)
 
     def generate_indexes(self):
@@ -74,19 +74,19 @@ class Patches(object):
         # We generate every possible combination of parameters here...
         log.info("Generating all patch indexes...")
         for i, values in enumerate(itertools.product(*ranges)):
-            self.patch_array_flat['values'][i] = numpy.array(values)
+            self.array_flat['values'][i] = numpy.array(values)
 
     def generate_neighbours_slow(self):
         log.info("Generating neighbourhoods for %d patches ...",
-                 len(self.patch_array_flat))
+                 len(self.array_flat))
 
         dims = self.dims
 
         # # Make a lookup table, so we can find the neighbours
-        lookup = dict([(tuple(p['values']), p) for p in self.patch_array_flat])
+        lookup = dict([(tuple(p['values']), p) for p in self.array_flat])
         # Now generate the neighbours
 
-        for patch_i, p in enumerate(self.patch_array_flat):
+        for patch_i, p in enumerate(self.array_flat):
             neighbour_i = 0
 
             # This is slow, so say something ...
@@ -120,10 +120,10 @@ class Patches(object):
     def generate_neighbours_fast(self):
         # TODO: Note that this is currently fucked
         log.info("Generating neighbourhoods for %d patches ...",
-                 len(self.patch_array_flat))
+                 len(self.array_flat))
 
         dims = self.dims
-        for patch_i, p in enumerate(self.patch_array_flat):
+        for patch_i, p in enumerate(self.array_flat):
             neighbour_i = 0
 
             # This is slow, so say something ...
@@ -186,7 +186,19 @@ class Patches(object):
 
     def clear(self):
         for c in self.clear_list:
-            self.patch_array_flat[c] = 0
+            self.array_flat[c] = 0
+
+    def normalize_fitness(self):
+        fit = self.array_flat['fitness']
+        minfit = min(fit)
+        maxfit = max(fit)
+        normed = (fit - minfit) * 1.0 / (maxfit - minfit)
+        self.array_flat['fitness'] = normed
+
+    def normalize_volume(self):
+        fit = self.array_flat['fitness']
+        total = sum(fit)
+        self.array_flat['fitness'] = fit / total
 
     # TODO: The fast one is currently slower and wrong!
     generate_neighbours = generate_neighbours_slow

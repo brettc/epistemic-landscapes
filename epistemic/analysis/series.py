@@ -75,12 +75,12 @@ class series(plugin.Plugin):
         #     self.create_pyx_graph()
 
     def calc_explored(self, record, sim):
-        """How much of the total space is currently explored?"""
+        """How much of the coverage space is currently explored?"""
         # Where returns a tuple when only a condition is spec'd. Just grab the
         # first bit...
         explored = numpy.where(sim.landscape['visits'] > 0)[0]
 
-        # Just compare it to total space
+        # Just compare it to coverage space
         fraction = float(len(explored)) / float(len(sim.landscape))
         record['explored'] = fraction
 

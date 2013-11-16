@@ -1,33 +1,60 @@
 import logging
+import numpy
+import agent
+
 log = logging.getLogger("stats")
 
-# Mostly operations on landscapes.
-def percent_visited_above_x(patch_data, cutoff, agent_typeid=None):
-    assert cutoff > 0.0 < 1.0
-    fitness = patch_data['fitness']
 
-    # Check out how easy numpy makes this kind of operation
-    # We get an array of booleans back
-    higher_than_cutoff = fitness > cutoff
+def _count_true(x):
+    # Count the numpy of True values
+    return float(sum(x))
 
-    if agent_typeid is None:
-        visit_count = patch_data['visits']
-    else:
-        visit_count = patch_data['visits_by_type'][:,agent_typeid]
 
-    visited = visit_count > 0
+class AgentStats(object):
+    """Use to store stats per Agent type"""
+    def __init__(self, st, i):
+        assert isinstance(st, Stats)
+        self.st = st
+        self.agent_type = i
+        self._calculate()
 
-    visited_above_cutoff = visited & higher_than_cutoff
+    def _calculate(self):
+        _p = self.st.patches
+        v = _p['visits_by_type'][:, self.agent_type]
+        self.visited = v > 0
+        self.visit_count = _count_true(self.visited)
 
-    # How much is above the cutoff in total
-    fit_total = sum(fitness[higher_than_cutoff] - cutoff)
+        self.nz_visited = numpy.logical_and(self.visited, self.st.nonzero)
+        self.nz_visited_count = _count_true(self.nz_visited)
 
-    # How much of this has been visited
-    fit_visited = sum(fitness[visited_above_cutoff] - cutoff)
+        self.coverage = self.visit_count / self.st.patch_count
+        self.progress = self.nz_visited_count / self.st.nz_count
+        self.knowledge = sum(_p[self.visited]['fitness'])
 
-    if fit_total == 0.0:
-        return 0.0
 
-    pc_visited = fit_visited / fit_total
-    return pc_visited
+class Stats(object):
+    def __init__(self, patches):
+        self.patches = patches
+        self._calculate()
+        self.per_agent = [AgentStats(self, i) for i in range(agent.agent_types)]
+
+    def _calculate(self):
+        # To ease readability
+        _p = self.patches
+        _where = numpy.where
+
+        self.patch_count = float(_p.size)
+
+        self.visited = _p['visits'] > 0
+        self.nonzero = _p['fitness'] > 0.0
+        self.nz_visited = numpy.logical_and(self.visited, self.nonzero)
+
+        self.nz_count = _count_true(self.nonzero)
+        self.visited_count = _count_true(self.visited)
+        self.nz_visited_count = _count_true(self.nz_visited)
+
+        self.coverage = self.visited_count / self.patch_count
+        self.progress = self.nz_visited_count / self.visited_count
+        self.knowledge = sum(_p[self.visited]['fitness'])
+
 

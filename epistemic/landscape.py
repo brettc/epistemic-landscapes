@@ -23,7 +23,7 @@ class Landscape(object):
 
     @property
     def data(self):
-        return self.patches.patch_array_flat
+        return self.patches.array_flat
 
     def get_fitness(self):
         return self.data['fitness']
@@ -70,7 +70,7 @@ class NKLandscape(Landscape):
         We have N parameters (dimensions)
         Each parameter can have S states, so (0, 1) for binary
         Each parameter state generates a fitness
-        The total fitness is the average across all parameters
+        The coverage fitness is the average across all parameters
 
         K is how many other parameters (dimensions) each parameter relies on.
         Assume than we have 3 binary dimensions, A, B, C. Total fitness depends
@@ -82,7 +82,7 @@ class NKLandscape(Landscape):
             is 0 or 1. For example:
                 if A == 0 then f(A) = .665
                 if A == 1 then f(A) = .123
-            To get the value for the total state we work out the same thing for
+            To get the value for the coverage state we work out the same thing for
             B and C, then average across all parameters
 
         In the K == 1 case:
@@ -159,7 +159,7 @@ class NKLandscape(Landscape):
         deps_and_fits = zip(self.dependencies, self.parameter_fitnesses)
 
         # TODO Should pbly swap the loops here. It might be faster...
-        for p in self.patches.patch_array_flat:
+        for p in self.patches.array_flat:
             fit = 0.0
             # Get the values of the parameters representing these patches
             vals = p['values']
@@ -256,10 +256,10 @@ class NKLandscape(Landscape):
 
     def find_peaks(self):
         peaks = []
-        for p in self.patches.patch_array_flat:
+        for p in self.patches.array_flat:
             bestf = p['fitness']
             for neighbour_i in p['neighbours']:
-                otherp = self.patches.patch_array_flat[neighbour_i]
+                otherp = self.patches.array_flat[neighbour_i]
                 otherf = otherp['fitness']
                 if otherf > bestf:
                     break

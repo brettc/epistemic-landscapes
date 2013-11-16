@@ -1,17 +1,14 @@
 import numpy
+from epistemic.patches import Patches
 
 
 class PatchController(object):
     def __init__(self, patches, depth=1, random_state=numpy.random):
-        """
-        @param patches: The patches!
-        @param depth: How deep the neighbourhood goes
-        @param random_state: Supplier of random numbers
-        """
+        assert isinstance(patches, Patches)
         self.patches = patches
         self.depth = depth
         self.random_state = random_state
-        self.array = self.patches.patch_array_flat
+        self.array = self.patches.array_flat
 
     @property
     def size(self):
@@ -58,7 +55,6 @@ class Patch(object):
         """
         if self._n is not None:
             return self._n
-
 
         full_set = set()
         curr_set = {self}
@@ -154,4 +150,3 @@ simple_props = ('index', 'visits', 'visits_by_type', 'fitness', 'values',
 # Add all the automatic properties to the class
 for property_name in simple_props:
     make_patch_property(property_name)
-
