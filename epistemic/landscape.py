@@ -15,8 +15,8 @@ def sample_without_repeats(M, N):
 
 class Landscape(object):
     """Maybe we'll manually define one later, so keep a base class"""
-    def __init__(self, dims, depth=1, cache_path=None):
-        self.patches = patches.Patches(dims, depth=depth, cache_path=cache_path)
+    def __init__(self, dims, depth=1):
+        self.patches = patches.Patches(dims, depth=depth)
 
     def clear(self):
         self.patches.clear()
@@ -51,9 +51,8 @@ class NKLandscape(Landscape):
     have more the 2 (binary) discrete values
 
     """
-    def __init__(self, dims, seed=None, K=0,
-                 cover=None, depth=1, cache_path=None):
-        Landscape.__init__(self, dims, depth=depth, cache_path=cache_path)
+    def __init__(self, dims, seed=None, K=0, cover=None, depth=1):
+        Landscape.__init__(self, dims, depth=depth)
         self.generate_parameter_fitnesses(seed, K)
         self.assign_patch_fitnesses()
         if cover is not None:

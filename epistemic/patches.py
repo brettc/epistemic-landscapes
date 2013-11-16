@@ -16,12 +16,15 @@ class Patches(object):
     This generates the neighbourhoods
     """
 
-    def __init__(self, dims, depth=1, cache_path=None):
+    def __init__(self, dims, depth=1, cache_path='~/.patches_cache'):
 
         self.dims = dims
         self.depth = depth
 
         if cache_path is not None:
+            cache_path = os.path.expanduser(cache_path)
+            if not os.path.exists(cache_path):
+                os.makedirs(cache_path)
             cache_path = os.path.join(cache_path, dims.ident())
             if os.path.exists(cache_path):
                 self.load_from_cache(cache_path)
