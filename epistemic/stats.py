@@ -6,7 +6,7 @@ log = logging.getLogger("stats")
 
 
 def _count_true(x):
-    # Count the numpy of True values
+    # Count the number of True values
     return float(sum(x))
 
 
@@ -41,7 +41,6 @@ class Stats(object):
     def _calculate(self):
         # To ease readability
         _p = self.patches
-        _where = numpy.where
 
         self.patch_count = float(_p.size)
 
@@ -54,7 +53,7 @@ class Stats(object):
         self.nz_visited_count = _count_true(self.nz_visited)
 
         self.coverage = self.visited_count / self.patch_count
-        self.progress = self.nz_visited_count / self.visited_count
+        self.progress = self.nz_visited_count / self.nz_count
         self.knowledge = sum(_p[self.visited]['fitness'])
 
 
