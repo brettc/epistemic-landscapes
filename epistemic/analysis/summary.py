@@ -42,7 +42,7 @@ class Row(object):
         return [
             len(self.sim.agents),
             self.st.coverage,
-            se  lf.st.progress,
+            self.st.progress,
             self.st.knowledge,
             ]
 
