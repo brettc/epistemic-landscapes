@@ -27,7 +27,7 @@ def tiny_sim(small_landscape):
 
 def test_agents(tiny_sim):
     # This is what the experiment framework does...
-    tiny_sim.begin()
+    tiny_sim.setup()
     tiny_sim.run()
 
     # What happened to our agents?

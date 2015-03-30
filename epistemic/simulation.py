@@ -53,7 +53,7 @@ class Simulation(object):
         self.default_placement.sim = self
         self.placements = {self.default_placement}
 
-    def begin(self):
+    def setup(self):
         log.info("Clearing Landscape...")
         # Note that this is necessary because we SHARE landscape data
         # TODO: This should pbly be fixed, so that we have STATIC and DYNAMIC

@@ -255,7 +255,7 @@ class Replicate(object):
         )
 
         # We can skip a simulation if we don't begin
-        if not sim.begin():
+        if not sim.setup():
             # If the history is safely closed, we can now say we're done
             os.unlink(self.running_mark)
             open(self.skipped_mark, 'a').close()
