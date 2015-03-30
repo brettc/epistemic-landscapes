@@ -29,7 +29,6 @@ def test_agents(tiny_sim):
     # This is what the experiment framework does...
     tiny_sim.begin()
     tiny_sim.run()
-    tiny_sim.end()
 
     # What happened to our agents?
     assert len(tiny_sim.agents) == 15

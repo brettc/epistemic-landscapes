@@ -1,8 +1,7 @@
 import logging
 log = logging.getLogger("analysis.trace")
 
-from ..pytreatments import plugin
-
+from .. import plugin
 
 class TraceAgent(object):
     def __init__(self, a, output):

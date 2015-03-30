@@ -3,8 +3,7 @@ import os
 import fnmatch
 # import pytest
 
-from epistemic.pytreatments import script, config
-from epistemic import context, simulation
+from epistemic import context, simulation, script, config
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 

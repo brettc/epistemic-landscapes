@@ -1,7 +1,7 @@
 import logging
 log = logging.getLogger("analysis.series")
 
-from ..pytreatments import plugin
+from .. import plugin
 
 import numpy
 import csv

@@ -3,7 +3,7 @@ log = logging.getLogger("analysis.summary")
 
 import csv
 
-from ..pytreatments import plugin
+from .. import plugin
 from .. import agent
 from .. import stats
 from ..simulation import Simulation

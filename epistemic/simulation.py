@@ -3,17 +3,41 @@ import logging
 log = logging.getLogger("simulation")
 
 import numpy
-import pytreatments
 import agent
 import placement
 import patch_control
 
+class Interrupt(Exception):
+    pass
 
-class Simulation(pytreatments.Simulation):
+
+class BaseProgress(object):
+    def __init__(self):
+        self.running = True
+        self.paused = False
+
+    def begin(self, sim):
+        pass
+
+    def update(self, sim):
+        pass
+
+    def interact(self, sim):
+        pass
+
+    def end(self, sim):
+        pass
+
+
+class Simulation(object):
     def __init__(self, seed, treatment_name, replicate_seq, parameters):
-        pytreatments.Simulation.__init__(
-            self, seed, treatment_name, replicate_seq)
+        self.seed = seed
+        self.treatment_name = treatment_name
+        self.replicate_seq = replicate_seq
+        self.description = "T{0.treatment_name} R{0.replicate_seq:0>3}".format(self)
+        self.time_step = 0
         self.parameters = parameters
+
         log.info("Randomizing...")
         self.random = numpy.random.RandomState()
         self.random.seed(self.parameters.seed)
@@ -55,6 +79,33 @@ class Simulation(pytreatments.Simulation):
 
         return True
 
+    def run(self, history=None, callbacks=None, progress=None):
+        if progress:
+            progress.begin(self)
+
+        while 1:
+            self.more = self.step(history)
+
+            if callbacks:
+                for c in callbacks:
+                    c(self)
+            if progress:
+                progress.update(self)
+                while progress.paused:
+                    progress.interact(self)
+                if progress.running is False:
+                    log.info("User interrupted simulation...")
+                    self.more = False
+
+            if not self.more:
+                break
+
+            # Update time step after we've done all the processing
+            self.time_step += 1
+
+        if progress:
+            progress.end(self)
+
     def step(self, history):
         log.info("Stepping ...")
         self.random.shuffle(self.agents)
@@ -65,9 +116,6 @@ class Simulation(pytreatments.Simulation):
             return False
 
         return True
-
-    def on_end(self):
-        pass
 
     def agent_types(self):
         return agent.get_agent_class_info()
